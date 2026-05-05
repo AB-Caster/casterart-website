@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Commissions, Process & Newsletter | Abraham Caster</title><meta name="description" content="Commission an original artwork by Abraham Caster, submit references, shipping details, and project context for an accurate quote."><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="styles.css">
+<style>
+.commissions-hero-img{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center top;
+  filter:grayscale(10%);
+  z-index:0;
+}
+.commissions-hero-bg{
+  position:absolute;
+  inset:0;
+  background:linear-gradient(to bottom,rgba(8,7,6,.1) 0%,rgba(8,7,6,.05) 35%,rgba(8,7,6,.72) 72%,rgba(8,7,6,1) 100%);
+  z-index:1;
+}
+.page-hero-content{
+  position:relative;
+  z-index:2;
+}
+.commission-grid{display:grid;grid-template-columns:.85fr 1.15fr;gap:72px;align-items:start}.tiers{display:flex;flex-direction:column;gap:12px;margin:40px 0}.commission-form-panel{border:1px solid var(--border);background:var(--surface);padding:42px}.commission-form-panel h2{font-family:var(--font-display);font-size:34px;margin-bottom:12px}.commission-form-panel>p{font-size:14px;color:var(--cream-dim);line-height:1.8;margin-bottom:28px}.commission-form{display:flex;flex-direction:column;gap:18px}.process-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border)}.process-step{background:var(--surface);padding:30px 26px;min-height:220px}.process-num{font-family:var(--font-display);font-size:42px;color:var(--gold);line-height:1;margin-bottom:20px}.process-step h3{font-family:var(--font-display);font-size:24px;margin-bottom:12px}.process-step p{font-size:13.5px;color:var(--cream-dim);line-height:1.8}.youtube-panel{text-align:center;max-width:660px;margin:0 auto}.youtube-panel p{font-size:14.5px;color:var(--cream-dim);line-height:1.88;margin-bottom:36px}.yt-link{display:inline-flex;align-items:center;gap:16px;padding:18px 42px;border:1px solid var(--border-md);font-size:12.5px;letter-spacing:.08em;color:var(--cream-dim);transition:all .3s}.yt-link:hover{border-color:var(--gold);color:var(--gold)}.yt-icon{width:20px;height:20px;fill:currentColor}@media(max-width:1100px){.commission-grid{grid-template-columns:1fr}.process-grid{grid-template-columns:1fr 1fr}}@media(max-width:680px){.commission-form-panel{padding:28px}.process-grid{grid-template-columns:1fr}}</style>
+
+  <link rel="stylesheet" href="casterart-layout-fix.css">
+
+</head>
+<body data-page="commissions"><div id="cursor"></div><div id="cursorRing"></div><div id="nav-placeholder"></div>
+<div class="page-hero">
+  <img src="assets/images/commissionbg.jpeg" alt="Fela by Abraham Caster" class="commissions-hero-img">
+  <div class="commissions-hero-bg"></div>
+  <div class="page-hero-content fade-in">
+    <p class="section-label eyebrow">Commissions</p>
+    <h1>A Work Created<br><em>Only For You</em></h1>
+    <p>Every commission is personal. Help me understand who or what matters to you, and I'll give you a piece that feels like yours alone.</p>
+  </div>
+</div>
+<section><div class="commission-grid"><div class="fade-in"><p class="section-label">Commission a Work</p><h2 class="section-title">Original<br><em>Commissions</em></h2><p style="font-size:14.5px;color:var(--cream-dim);line-height:1.9">This form is intentionally detailed. It helps me understand what you want so I can give you a fair estimate, and it helps filter serious inquiries from casual messages.</p><div class="tiers"><div class="tier-card"><div><div class="tier-name">A4 · Small</div><div class="tier-desc">8" x 12" · Intimate scale</div></div><div class="tier-price">From $800</div></div><div class="tier-card"><div><div class="tier-name">A3 · Medium</div><div class="tier-desc">12" x 16" · Strong presence</div></div><div class="tier-price">From $1,100</div></div><div class="tier-card"><div><div class="tier-name">A2 · Large</div><div class="tier-desc">16" x 20" · Statement piece</div></div><div class="tier-price">From $1,500</div></div><div class="tier-card"><div><div class="tier-name">A1 / A0 · Grand</div><div class="tier-desc">24"+ · Monumental scale</div></div><div class="tier-price">From $2,000</div></div></div><div class="policy-highlight"><p>Final pricing depends on size, medium, number of subjects, deadline, detail level, and shipping destination. A 50% deposit is required to begin. Typical turnaround is 4 to 8 weeks after approval.</p></div></div>
+<div class="commission-form-panel fade-in"><h2>Commission Inquiry Form</h2><p>Fill this as clearly as you can. Reference photos are important.</p><form id="commissionForm" class="commission-form" enctype="multipart/form-data" onsubmit="handleCommissionSubmit(event)">
+<div class="form-row"><div class="form-group"><label for="cf-name">Full Name *</label><input id="cf-name" name="name" type="text" autocomplete="name" placeholder="Your name" required></div><div class="form-group"><label for="cf-email">Email *</label><input id="cf-email" name="email" type="email" autocomplete="email" placeholder="you@email.com" required></div></div>
+<div class="form-row"><div class="form-group"><label for="cf-phone">Phone / WhatsApp</label><input id="cf-phone" name="phone" type="text" placeholder="Include country code if possible"></div><div class="form-group"><label for="cf-country">Destination Country *</label><input id="cf-country" name="country" type="text" autocomplete="country-name" placeholder="Where will it ship?" required></div></div>
+<div class="form-row"><div class="form-group"><label for="cf-city">City / State</label><input id="cf-city" name="city" type="text" placeholder="City, state, province"></div><div class="form-group"><label for="cf-deadline">Deadline</label><input id="cf-deadline" name="deadline" type="text" placeholder="Flexible, or date needed"></div></div>
+<div class="form-row"><div class="form-group"><label for="cf-size">Preferred Size</label><select id="cf-size" name="size"><option value="">Select a size</option><option>A4 · Small (from $800)</option><option>A3 · Medium (from $1,100)</option><option>A2 · Large (from $1,500)</option><option>A1 / A0 · Grand (from $2,000)</option><option>Not sure yet. I would like guidance</option></select></div><div class="form-group"><label for="cf-medium">Medium Preference</label><select id="cf-medium" name="medium"><option value="">Flexible / artist recommendation</option><option>Graphite</option><option>Charcoal</option><option>Graphite + Charcoal</option><option>Pastel / Mixed Media</option><option>Ball pen</option><option>Digital artwork</option></select></div></div>
+<div class="form-row"><div class="form-group"><label for="cf-subjects">Number of Subjects</label><input id="cf-subjects" name="subjects" type="text" placeholder="One person, couple, family, pet, object"></div><div class="form-group"><label for="cf-budget">Budget Range</label><input id="cf-budget" name="budget" type="text" placeholder="Optional, but helpful"></div></div>
+<div class="form-group"><label for="cf-vision">Story / Vision *</label><textarea id="cf-vision" name="vision" rows="7" placeholder="Who or what should be drawn? What is the story behind it? What mood should it carry? Is it a gift, memorial, personal piece, family portrait, or something else?" required></textarea></div>
+<div class="form-group"><label for="cf-shipping">Shipping Address / Delivery Notes</label><textarea id="cf-shipping" name="shipping" rows="4" placeholder="You can provide the full address now or just enough details for an accurate shipping quote."></textarea></div>
+<div class="form-group">
+  <label for="cf-references">Reference Photos *</label>
+  <input 
+    id="cf-references" 
+    name="references" 
+    type="file" 
+    accept="image/jpeg,image/png,image/webp" 
+    multiple 
+    required
+  >
+  <div class="form-help">
+    Upload up to 3 clear reference photos. JPG, PNG or WebP only. Maximum 2MB per file.</div></div>
+<button class="btn-submit" type="submit">Send Commission Inquiry</button><div class="backend-note"><p>Security note: Uploaded references and form data are safely stored and protected.</p></div>
+</form></div></div></section>
+<section class="section-surface"><div class="fade-in" style="text-align:center;max-width:700px;margin:0 auto 56px"><p class="section-label" style="justify-content:center">The Process</p><h2 class="section-title">How a Commission<br><em>Becomes Real</em></h2></div><div class="process-grid fade-in"><div class="process-step"><div class="process-num">01</div><h3>Inquiry</h3><p>You share the subject, story, references, size, timeline, and shipping destination.</p></div><div class="process-step"><div class="process-num">02</div><h3>Quote</h3><p>I review the details and send pricing, timeline, payment options, and what I need next.</p></div><div class="process-step"><div class="process-num">03</div><h3>Creation</h3><p>After deposit, the artwork begins. Progress updates are shared at key stages.</p></div><div class="process-step"><div class="process-num">04</div><h3>Delivery</h3><p>The finished work ships with documentation, certificate of authenticity, and tracking.</p></div></div></section>
+<section><div class="youtube-panel fade-in"><p class="section-label" style="justify-content:center">Watch the Work</p><h2 class="section-title">Follow the<br><em>Creative Process</em></h2><p>The making is part of the story. Follow the drawings, experiments, failures, lessons, and current evolution from hyperrealism into abstract figurative expression.</p><a href="https://www.youtube.com/@Caster_art" target="_blank" rel="noopener" class="yt-link">Subscribe on YouTube</a></div></section>
+<section id="newsletter" class="section-surface"><div class="newsletter-wrap fade-in"><p class="section-label">The Inner Circle</p><div class="newsletter-inner"><h2 class="section-title">First Access.<br>No Noise.</h2><p>New originals, limited print drops, studio notes, and collector-first release announcements.</p><div class="form-row" style="margin-bottom:12px"><div class="form-group"><input type="text" id="nl-name" placeholder="First name" autocomplete="given-name"></div><div class="form-group"><input type="email" id="nl-email" placeholder="Email address" autocomplete="email"></div></div><button class="btn-primary" style="width:100%;text-align:center;display:block" onclick="handleNewsletterSubmit('nl-name','nl-email')">Join the List</button><p class="newsletter-note">No spam. Unsubscribe any time. Your email is never shared.</p></div></div></section>
+<div id="footer-placeholder"></div><div id="popup-placeholder"></div><script src="shared.js"></script></body></html>

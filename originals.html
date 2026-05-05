@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Original Artworks | Abraham Caster</title>
+  <meta name="description" content="Original artworks and series by Abraham Caster. Charcoal, graphite, pastel, and mixed media works available worldwide.">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="styles.css">
+<style>
+.originals-hero-img{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center top;
+  filter:grayscale(10%);
+  z-index:0;
+}
+.originals-hero-bg{
+  position:absolute;
+  inset:0;
+  background:linear-gradient(to bottom,rgba(8,7,6,.1) 0%,rgba(8,7,6,.05) 35%,rgba(8,7,6,.72) 72%,rgba(8,7,6,1) 100%);
+  z-index:1;
+}
+.page-hero-content{
+  position:relative;
+  z-index:2;
+}
+.originals-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.work-item,.series-card{grid-column:span 4}.work-item .work-card-img{aspect-ratio:3/4}.originals-note{display:grid;grid-template-columns:1fr 1fr;gap:36px;padding:52px;background:var(--surface);border:1px solid var(--border);margin-top:80px}.originals-note h3{font-family:var(--font-display);font-size:32px;margin-bottom:14px}.originals-note p{font-size:14px;color:var(--cream-dim);line-height:1.84;margin-bottom:22px}@media(max-width:1100px){.originals-grid{grid-template-columns:1fr 1fr}.work-item,.series-card{grid-column:span 1}.originals-note{grid-template-columns:1fr}}@media(max-width:680px){.originals-grid{grid-template-columns:1fr}}</style>
+
+  <link rel="stylesheet" href="casterart-layout-fix.css">
+
+</head>
+<body data-page="originals"><div id="cursor"></div><div id="cursorRing"></div><div id="nav-placeholder"></div>
+<div class="page-hero">
+  <img src="assets/images/originalbg.jpg" alt="Fela by Abraham Caster" class="originals-hero-img">
+  <div class="originals-hero-bg"></div>
+  <div class="page-hero-content fade-in">
+    <p class="section-label eyebrow">Original Artworks</p>
+    <h1>Every Detail<br><em>Tells a Story.<br><em>Yours.</em></h1>
+    <p>Each original comes with a story of its own, and every one is worth hearing.</p>
+  </div>
+</div>
+<section>
+  <div class="fade-in" style="max-width:720px;margin-bottom:52px"><p class="section-label">Browse Originals</p><h2 class="section-title">Single Works<br><em>and Series</em></h2><p style="font-size:14.5px;color:var(--cream-dim);line-height:1.88"></p></div>
+  <div class="originals-grid" id="originalsGrid"></div>
+  <div class="originals-note fade-in"><div><h3>Interested in<br>an Original?</h3><p>Every original is unique, and so is every collector. Tell me which piece speaks to you. I'll reply personally with price, availability, and how you become its collector.</p><p style="font-size:12.5px;color:var(--muted)">Pay in your currency. Ship anywhere. Secure payment options.</p></div><div style="display:flex;flex-direction:column;justify-content:center;gap:16px"><a href="commissions.html" class="btn-primary" style="text-align:center">Commission a New Piece</a><a href="prints.html" class="btn-outline" style="text-align:center">Browse Limited Prints</a><a href="mailto:info@casterart.com?subject=Original Artwork Inquiry" class="btn-ghost" style="justify-content:center">Email Directly <span class="arrow">></span></a></div></div>
+</section>
+<div id="footer-placeholder"></div><div id="popup-placeholder"></div><div id="modal-placeholder"></div><script src="shared.js"></script><script>document.addEventListener('DOMContentLoaded',renderOriginalsWithSeries);</script></body></html>

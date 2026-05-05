@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://casterart.com/sitemap.xml

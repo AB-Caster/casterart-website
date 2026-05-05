@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Abraham Caster | Portrait & Figurative Artist</title>
+  <meta name="description" content="Self-taught Nigerian artist exploring the human condition through hyperrealism, portrait drawing, limited prints, originals, and commissions.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    #hero{height:100vh;position:relative;display:flex;align-items:flex-end;padding:0 52px 88px;overflow:hidden}
+    .hero-bg{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(8,7,6,.1) 0%,rgba(8,7,6,.05) 35%,rgba(8,7,6,.72) 72%,rgba(8,7,6,1) 100%);z-index:1}
+    .hero-img{position:absolute;inset:0;object-fit:cover;object-position:center top;filter:grayscale(10%)}
+    .hero-content{position:relative;z-index:2;max-width:860px;opacity:0;transform:translateY(28px);animation:heroIn 1.2s ease .3s forwards}
+    @keyframes heroIn{to{opacity:1;transform:translateY(0)}}
+    .hero-eyebrow{font-size:10px;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);margin-bottom:22px;display:flex;align-items:center;gap:16px}
+    .hero-eyebrow:before{content:'';display:inline-block;width:36px;height:1px;background:var(--gold)}
+    .hero-title{font-family:var(--font-display);font-size:clamp(72px,9vw,136px);line-height:.88;font-weight:300;margin-bottom:32px;letter-spacing:-.02em}
+    .hero-title em{font-style:italic;color:var(--gold)}
+    .hero-sub{font-size:14.5px;color:var(--cream-dim);line-height:1.84;max-width:510px;margin-bottom:48px}
+    .hero-actions{display:flex;gap:26px;align-items:center;flex-wrap:wrap}
+    #about-teaser{display:grid;grid-template-columns:1fr 1fr;gap:88px;align-items:center}
+    .about-img-wrap{aspect-ratio:3/4;overflow:hidden;position:relative}.about-img-wrap:after{content:'';position:absolute;inset:0;border:1px solid var(--gold-dim);transform:translate(14px,14px);pointer-events:none}
+    .about-text p{font-size:14.5px;color:var(--cream-dim);line-height:1.9;margin-bottom:20px}.about-text strong{color:var(--cream);font-weight:400}
+    #featured-works .works-header{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:56px}#featured-works .works-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}#featured-works .work-card-img{aspect-ratio:3/4}
+    #series-teaser .series-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px}
+    #prints-teaser{display:grid;grid-template-columns:810px 1fr;gap:88px;align-items:center}.print-teaser-feature-img{width:500px;aspect-ratio:3/4;overflow:hidden}.print-teaser-mobile-img{display:none}.print-info-stack{display:flex;flex-direction:column;gap:18px}.print-info-row{padding:20px 24px;border:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}.print-info-label{font-size:12px;color:var(--cream-dim)}.print-info-val{font-family:var(--font-display);font-size:22px}.prints-note{margin-top:24px;font-size:12.5px;color:var(--muted);line-height:1.75;padding:18px 22px;border-left:2px solid var(--gold);background:var(--surface-2)}
+    @media(max-width:1100px){#hero{padding:0 32px 64px}#about-teaser,#prints-teaser{grid-template-columns:1fr;gap:52px}.about-img-wrap{max-width:400px}#featured-works .works-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:680px){
+  #hero{padding:0 24px 56px}
+  .hero-title{font-size:56px}
+  #featured-works .works-grid,#series-teaser .series-grid{grid-template-columns:1fr}
+
+  #prints-teaser .print-teaser-feature{
+    display:none;
+  }
+
+  .print-teaser-mobile-img{
+    display:block;
+    aspect-ratio:3/4;
+    overflow:hidden;
+    margin:0 0 32px;
+  }
+}
+  </style>
+
+  <link rel="stylesheet" href="casterart-layout-fix.css">
+
+</head>
+<body data-page="home">
+<div id="cursor"></div><div id="cursorRing"></div><div id="nav-placeholder"></div>
+
+<div id="hero">
+  <img src="assets/images/homebanner.jpg" alt="Fela by Abraham Caster" class="hero-img">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">Portrait · Figurative · Hyperrealism · Nigeria</p>
+    <h1 class="hero-title">Abraham<br><em>Caster</em></h1>
+    <p class="hero-sub">I draw faces because they carry what words can't: memory, contradiction, survival, and the questions we often keep quiet.</p>
+    <div class="hero-actions"><a href="originals.html" class="btn-primary">View Originals</a><a href="commissions.html" class="btn-ghost">Commission a Piece <span class="arrow">></span></a></div>
+  </div>
+</div>
+
+<section id="about-teaser">
+  <div class="about-img-wrap fade-in"><img src="assets/images/caster.jpg" alt="Abraham Caster"></div>
+  <div class="about-text fade-in">
+    <p class="section-label">The Artist</p>
+    <h2 class="section-title">Art as<br><em>Self-Archaeology</em></h2>
+    <p>Abraham Caster is a self-taught hyperrealism portrait artist based in Nigeria. He started drawing since he could remember, slowly shaping his style through graphite, charcoal, pastel, colour pencil, ball pen, and digital media.</p>
+    <p>His work comes from a psychological place. Each drawing is part of an attempt to understand himself, the world around him, and why humans believe, judge, love, fear, remember, and change the way they do.</p>
+    <a href="about.html" class="btn-ghost">Read the full story <span class="arrow">></span></a>
+  </div>
+</section>
+
+<section id="featured-works" class="section-surface">
+  <div class="works-header fade-in"><div><p class="section-label">Curated Works</p><h2 class="section-title">Original<br>Artworks</h2></div><a href="originals.html" class="btn-ghost">View all originals <span class="arrow">></span></a></div>
+  <div class="works-grid" id="featuredGrid"></div>
+</section>
+
+<section id="series-teaser">
+  <div class="fade-in" style="max-width:680px;margin-bottom:48px"><p class="section-label">Series</p><h2 class="section-title">Works That<br><em>Speak Together</em></h2><p style="font-size:14.5px;color:var(--cream-dim);line-height:1.88">Some works are not meant to stand alone. They belong to a larger question. These series pages bring those pieces together so you can read them as one conversation.</p></div>
+  <div class="series-grid" id="homeSeriesGrid"></div>
+</section>
+
+<section id="prints-teaser" class="section-surface">
+  <div class="fade-in">
+    <p class="section-label">Limited Edition</p><h2 class="section-title">Art<br>Prints</h2>
+  <p style="font-size:14.5px;color:var(--cream-dim);line-height:1.88;margin-bottom:32px">Prints are for you if you connect with a piece and want to become its collector.</p>
+
+<div class="print-teaser-mobile-img">
+  <img src="assets/images/serenity.jpg" alt="Serenity by Abraham Caster">
+</div>
+
+<div class="print-info-stack"><div class="print-info-row"><span class="print-info-label">A4 · 8" x 12"</span><span class="print-info-val">$80</span></div><div class="print-info-row"><span class="print-info-label">A3 · 12" x 16"</span><span class="print-info-val">$130</span></div><div class="print-info-row"><span class="print-info-label">A2 · 16" x 20"</span><span class="print-info-val">$220</span></div></div>
+    <div class="prints-note">Edition of 25 per size, Once a size sells out, it will not be reprinted. Hand-signed with certificate of authenticity included. Free worldwide shipping.</div><br><a href="prints.html" class="btn-outline">Shop All Prints</a>
+  </div>
+  <div class="print-teaser-feature fade-in"><div class="print-teaser-feature-img"><img src="assets/images/serenity.jpg" data-fallback="https://casterart.com/assets/images/gallery10/6523b833_original.jpg" alt="Grey by Abraham Caster"></div></div>
+</section>
+
+<section>
+  <div class="newsletter-wrap fade-in"><p class="section-label">The Inner Circle</p><div class="newsletter-inner"><h2 class="section-title">First Access.<br>No Noise.</h2><p>I only send notes when there is something real to share: new originals, print drops, studio thoughts, and first access before I post publicly.</p><div class="form-row" style="margin-bottom:12px"><div class="form-group"><input type="text" id="nl-name" placeholder="First name"></div><div class="form-group"><input type="email" id="nl-email" placeholder="Email address"></div></div><button class="btn-primary" style="width:100%;text-align:center;display:block" onclick="handleNewsletterSubmit('nl-name','nl-email')">Join the List</button><p class="newsletter-note">No spam. Unsubscribe any time. Your email is never shared.</p></div></div>
+</section>
+
+<div id="footer-placeholder"></div><div id="popup-placeholder"></div><div id="modal-placeholder"></div>
+<script src="shared.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+ const grid=document.getElementById('featuredGrid'); ARTWORKS.filter(a=>a.featured).slice(0,3).forEach(w=>grid.insertAdjacentHTML('beforeend', originalCardHTML(w))); setupFadeObserver(grid);
+ const sg=document.getElementById('homeSeriesGrid'); SERIES.forEach(s=>sg.insertAdjacentHTML('beforeend', seriesCardHTML(s))); setupFadeObserver(sg);
+});
+</script>
+</body>
+</html>

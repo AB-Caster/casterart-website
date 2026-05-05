@@ -1,0 +1,258 @@
+/* =====================================================
+   Abraham Caster — Surgical Layout Fix
+   Add this file AFTER styles.css on every page.
+   It only targets the layout problems listed:
+   - desktop home print teaser grid
+   - mobile artwork modal scrolling
+   - mobile series page alignment
+   - mobile commission page alignment
+   - desktop policy copy anchored left
+   ===================================================== */
+
+/* ---------- 1) HOME PRINT TEASER: desktop coherence ---------- */
+@media (min-width:1101px){
+  #prints-teaser{
+    grid-template-columns:minmax(0, 1fr) minmax(360px, 500px) !important;
+    gap:clamp(52px, 6vw, 88px) !important;
+    align-items:center !important;
+  }
+
+  #prints-teaser > *{
+    min-width:0 !important;
+  }
+
+  #prints-teaser .print-teaser-feature{
+    justify-self:end !important;
+    width:100% !important;
+    max-width:500px !important;
+  }
+
+  #prints-teaser .print-teaser-feature-img{
+    width:100% !important;
+    max-width:500px !important;
+    aspect-ratio:3/4 !important;
+    overflow:hidden !important;
+  }
+}
+
+/* ---------- 2) POLICY PAGE: desktop copy anchored left ---------- */
+@media (min-width:681px){
+  .policy-content{
+    margin-left:0 !important;
+    margin-right:auto !important;
+  }
+}
+
+/* ---------- 3) MOBILE ARTWORK MODAL: make statement scroll/readable ---------- */
+@media (max-width:680px){
+  .modal-overlay.active{
+    align-items:flex-start !important;
+    justify-content:center !important;
+    overflow-y:auto !important;
+    -webkit-overflow-scrolling:touch !important;
+    padding:72px 16px 24px !important;
+  }
+
+  .modal{
+    width:100% !important;
+    max-width:520px !important;
+    max-height:none !important;
+    grid-template-columns:1fr !important;
+  }
+
+  .modal-img{
+    min-height:0 !important;
+    height:auto !important;
+    aspect-ratio:3/4 !important;
+  }
+
+  .modal-body{
+    overflow:visible !important;
+    max-height:none !important;
+    padding:30px 22px 24px !important;
+  }
+
+  .modal-title{
+    font-size:38px !important;
+  }
+
+  .modal-meta{
+    margin-bottom:22px !important;
+    padding-bottom:22px !important;
+  }
+
+  .modal-statement{
+    flex:initial !important;
+    margin-bottom:28px !important;
+  }
+
+  .modal-close{
+    position:fixed !important;
+    top:18px !important;
+    right:18px !important;
+  }
+}
+
+/* ---------- 4) SERIES PAGES: mobile alignment / spacing coherence ---------- */
+.series-hero-grid,
+.series-commerce-grid,
+.series-commerce-card,
+.series-commerce-body,
+.series-commerce-actions,
+.series-commerce-print,
+.size-selector{
+  min-width:0 !important;
+}
+
+.series-hero-img{
+  width:100% !important;
+  max-width:460px !important;
+}
+
+.series-commerce-grid{
+  box-sizing:border-box !important;
+}
+
+@media (max-width:900px){
+  .series-hero-grid{
+    grid-template-columns:1fr !important;
+    gap:38px !important;
+    align-items:start !important;
+  }
+
+  .series-hero-img{
+    width:100% !important;
+    max-width:440px !important;
+    justify-self:start !important;
+  }
+
+  .series-commerce-grid{
+    width:100% !important;
+    max-width:none !important;
+    margin:0 !important;
+    padding-right:0 !important;
+    gap:28px !important;
+  }
+
+  .series-commerce-card{
+    grid-template-columns:1fr !important;
+    width:100% !important;
+  }
+
+  .series-commerce-img{
+    width:100% !important;
+    height:auto !important;
+    min-height:0 !important;
+    aspect-ratio:3/4 !important;
+  }
+
+  .series-commerce-body{
+    padding:28px !important;
+  }
+}
+
+@media (max-width:680px){
+  .series-hero-grid{
+    gap:30px !important;
+  }
+
+  .series-statement{
+    font-size:14px !important;
+    line-height:1.86 !important;
+    max-width:none !important;
+  }
+
+  .series-commerce-body{
+    padding:24px 20px !important;
+  }
+
+  .series-commerce-body h3{
+    font-size:32px !important;
+  }
+
+  .series-commerce-text{
+    font-size:13px !important;
+    line-height:1.72 !important;
+  }
+
+  .series-commerce-actions .modal-cta,
+  .series-commerce-actions .btn-checkout,
+  .series-commerce-print .btn-checkout{
+    width:100% !important;
+  }
+
+  .size-option{
+    gap:12px !important;
+  }
+}
+
+/* ---------- 5) COMMISSIONS PAGE: mobile alignment / no overflow ---------- */
+.commission-grid,
+.commission-form-panel,
+.commission-form,
+.tiers,
+.tier-card,
+.process-grid,
+.process-step,
+.youtube-panel{
+  min-width:0 !important;
+}
+
+@media (max-width:900px){
+  .commission-grid{
+    grid-template-columns:1fr !important;
+    gap:46px !important;
+  }
+
+  .commission-form-panel{
+    width:100% !important;
+    padding:34px 28px !important;
+  }
+
+  .process-grid{
+    grid-template-columns:1fr 1fr !important;
+  }
+}
+
+@media (max-width:680px){
+  .commission-grid{
+    gap:38px !important;
+  }
+
+  .commission-form-panel{
+    padding:28px 20px !important;
+  }
+
+  .commission-form-panel h2{
+    font-size:30px !important;
+  }
+
+  .tier-card{
+    display:grid !important;
+    grid-template-columns:1fr !important;
+    gap:10px !important;
+    align-items:start !important;
+    padding:22px 20px !important;
+  }
+
+  .tier-price{
+    font-size:24px !important;
+  }
+
+  .process-grid{
+    grid-template-columns:1fr !important;
+  }
+
+  .process-step{
+    min-height:0 !important;
+    padding:26px 22px !important;
+  }
+
+  .yt-link{
+    width:100% !important;
+    justify-content:center !important;
+    text-align:center !important;
+    padding-left:22px !important;
+    padding-right:22px !important;
+  }
+}
