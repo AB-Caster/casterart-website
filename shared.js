@@ -445,7 +445,45 @@ function showPopup(){ const overlay=document.getElementById('popupOverlay'); if(
 function dismissPopup(){ const overlay=document.getElementById('popupOverlay'); if(overlay){ overlay.classList.remove('active'); document.body.style.overflow=''; } }
 async function handlePopupSubscribe(){ const name=document.getElementById('popupName').value.trim(); const email=document.getElementById('popupEmail').value.trim(); if(!name){showToast('Please enter your first name.');return;} if(!email||!email.includes('@')){showToast('Please enter a valid email address.');return;} await subscribeToList(name,email,'popup'); }
 async function subscribeToList(firstName,email,source='newsletter'){ try{ const resp=await fetch('/.netlify/functions/brevo-subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({firstName,email,source})}); if(resp.ok){ localStorage.setItem('caster_subscribed','true'); if(source==='popup'){document.getElementById('popupForm').style.display='none';document.getElementById('popupSuccess').style.display='block';setTimeout(dismissPopup,2500);} else showToast('You are in. Welcome to the inner circle.',true); } else showToast('Sign-up is not ready yet. Please try again later.'); } catch(err){ console.warn(err); showToast('Sign-up is not ready yet. Please try again later.'); } }
-function handleNewsletterSubmit(nameId,emailId){ const name=document.getElementById(nameId).value.trim(); const email=document.getElementById(emailId).value.trim(); if(!name){showToast('Please enter your first name.');return;} if(!email||!email.includes('@')){showToast('Please enter a valid email.');return;} subscribeToList(name,email,'page'); }
+async function handleNewsletterSubmit(nameId, emailId) {
+  const firstName = document.getElementById(nameId)?.value?.trim();
+  const email = document.getElementById(emailId)?.value?.trim();
+
+  if (!firstName || !email) {
+    showToast('Please enter your first name and email address.', 'error');
+    return;
+  }
+
+  if (!email.includes('@')) {
+    showToast('Please enter a valid email address.', 'error');
+    return;
+  }
+
+  try {
+    const resp = await fetch('/.netlify/functions/brevo-subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        firstName,
+        email,
+        source: 'newsletter'
+      })
+    });
+
+    const data = await resp.json();
+
+    if (resp.ok && data.ok) {
+      showToast("You're on the list. First access is yours.", 'success');
+      document.getElementById(nameId).value = '';
+      document.getElementById(emailId).value = '';
+    } else {
+      showToast('Something went wrong. Please try again.', 'error');
+    }
+  } catch (err) {
+    console.error('Newsletter error:', err);
+    showToast('Something went wrong. Please try again.', 'error');
+  }
+}
 async function handleCommissionSubmit(event){ 
   if(event) event.preventDefault(); 
 
