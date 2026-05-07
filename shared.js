@@ -2,14 +2,13 @@
    ABRAHAM CASTER - Shared Site Logic
    =========================================== */
 
-
-// Load Flutterwave checkout and signal when ready
+// Load Flutterwave checkout script — tracked so we know when it's ready
 window.flwReady = false;
 (function(){
   const s = document.createElement('script');
   s.src = 'https://checkout.flutterwave.com/v3.js';
   s.onload = function(){ window.flwReady = true; };
-  s.onerror = function(){ console.error('Flutterwave script failed to load.'); };
+  s.onerror = function(){ console.error('Flutterwave failed to load.'); };
   document.head.appendChild(s);
 })();
 
@@ -422,59 +421,61 @@ function renderSeriesPage(seriesId){
 }
 
 function seriesCommerceCardHTML(w){
-  const originalSubject = encodeURIComponent(`Original Inquiry: ${w.title}`);
-  const originalBody = encodeURIComponent(`Hello,
+  const originalSubject = encodeURIComponent('Original Inquiry: ' + w.title);
+  const originalBody = encodeURIComponent('Hello,\n\nI am interested in the original "' + w.title + '" (' + w.medium + ', ' + w.year + ').\n\nPlease share pricing and availability.\n\nThank you.');
 
-I am interested in the original "${w.title}" (${w.medium}, ${w.year}).
-
-Please share pricing and availability.
-
-Thank you.`);
-
-  return `
-    <div class="series-commerce-card fade-in" id="${w.id}">
-      <div class="series-commerce-img">
-        ${imgTag(w.image, w.fallbackImage, w.title)}
-      </div>
-
-      <div class="series-commerce-body">
-        <p class="series-commerce-kicker">${w.medium} · ${w.year}</p>
-        <h3>${w.title}</h3>
-        <p class="series-commerce-text">${w.statement}</p>
-
-        <div class="series-commerce-actions">
-          <a class="modal-cta" href="mailto:${SITE_EMAIL}?subject=${originalSubject}&body=${originalBody}">
-            Inquire About Original
-          </a>
-         <div class="size-selector" id="sizes-series-${w.id}">
-  ${PRINT_SIZES.map((s,i)=>`
-    <label class="size-option${i===0?' selected':''}" for="series-${w.id}-${i}" onclick="selectSize(this)">
-      <input type="radio" name="series-size-${w.id}" id="series-${w.id}-${i}" value="${i}"${i===0?' checked':''}>
-      <span class="size-option-label">${s.label}</span>
-      <span class="size-option-price">${s.price}</span>
-    </label>
-  `).join('')}
-</div>
-
-<button class="btn-checkout" onclick="buyPrint('${w.id}','series-${w.id}')">
-  Claim This Print
-</button>
-        </div>
-      </div>
-    </div>`;
+  return '<div class="series-commerce-card fade-in" id="' + w.id + '">'
+    + '<div class="series-commerce-img">' + imgTag(w.image, w.fallbackImage, w.title) + '</div>'
+    + '<div class="series-commerce-body">'
+    + '<p class="series-commerce-kicker">' + w.medium + ' · ' + w.year + '</p>'
+    + '<h3>' + w.title + '</h3>'
+    + '<p class="series-commerce-text">' + w.statement + '</p>'
+    + '<div class="series-commerce-actions">'
+    + '<a class="modal-cta" href="mailto:' + SITE_EMAIL + '?subject=' + originalSubject + '&body=' + originalBody + '">Inquire About Original</a>'
+    + '<div class="size-selector" id="sizes-series-' + w.id + '">'
+    + PRINT_SIZES.map(function(s, i){
+        return '<label class="size-option' + (i===0?' selected':'') + '" for="series-' + w.id + '-' + i + '" onclick="selectSize(this)">'
+          + '<input type="radio" name="series-size-' + w.id + '" id="series-' + w.id + '-' + i + '" value="' + i + '"' + (i===0?' checked':'') + '>'
+          + '<span class="size-option-label">' + s.label + '</span>'
+          + '<span class="size-option-price">' + s.price + '</span>'
+          + '</label>';
+      }).join('')
+    + '</div>'
+    + '<button class="btn-checkout" onclick="buyPrint(\'' + w.id + '\',\'series-' + w.id + '\')">Claim This Print</button>'
+    + '</div></div></div>';
 }
-function printCardHTML(w){ const safe=w.id.replace(/[^a-z0-9]/g,''); return `<div class="print-card fade-in" id="${w.id}"><div class="print-card-img">${imgTag(w.image,w.fallbackImage,w.title + ' print')}</div><div class="print-card-body"><h3 class="print-card-title">${w.title}</h3><p class="print-card-edition">Limited Edition · 25 prints per size · Hand-signed</p><p class="print-card-summary">${w.statement.split('\n')[0].slice(0,170)}...</p><div class="size-selector" id="sizes-${safe}">${PRINT_SIZES.map((s,i)=>`<label class="size-option${i===0?' selected':''}" for="s${safe}${i}" onclick="selectSize(this)"><input type="radio" name="size-${safe}" id="s${safe}${i}" value="${i}"${i===0?' checked':''}><span class="size-option-label">${s.label}</span><span class="size-option-price">${s.price}</span></label>`).join('')}</div><div class="payment-options"><button class="btn-checkout" onclick="buyPrint('${w.id}','${safe}')">Claim This Print</button></a></div></div></div>`; }
-function selectSize(label){ const container=label.closest('.size-selector'); container.querySelectorAll('.size-option').forEach(l=>l.classList.remove('selected')); label.classList.add('selected'); }
-function buyPrint(artworkId, safeId) {
-  const selected = document.querySelector(`#sizes-${safeId} .size-option.selected`);
-  if (!selected) { showToast('Please select a size.'); return; }
 
+function printCardHTML(w){
+  const safe = w.id.replace(/[^a-z0-9]/g,'');
+  return '<div class="print-card fade-in" id="' + w.id + '">'
+    + '<div class="print-card-img">' + imgTag(w.image, w.fallbackImage, w.title + ' print') + '</div>'
+    + '<div class="print-card-body">'
+    + '<h3 class="print-card-title">' + w.title + '</h3>'
+    + '<p class="print-card-edition">Limited Edition · 25 prints per size · Hand-signed</p>'
+    + '<p class="print-card-summary">' + w.statement.split('\n')[0].slice(0,170) + '...</p>'
+    + '<div class="size-selector" id="sizes-' + safe + '">'
+    + PRINT_SIZES.map(function(s, i){
+        return '<label class="size-option' + (i===0?' selected':'') + '" for="s' + safe + i + '" onclick="selectSize(this)">'
+          + '<input type="radio" name="size-' + safe + '" id="s' + safe + i + '" value="' + i + '"' + (i===0?' checked':'') + '>'
+          + '<span class="size-option-label">' + s.label + '</span>'
+          + '<span class="size-option-price">' + s.price + '</span>'
+          + '</label>';
+      }).join('')
+    + '</div>'
+    + '<div class="payment-options">'
+    + '<button class="btn-checkout" onclick="buyPrint(\'' + w.id + '\',\'' + safe + '\')">Claim This Print</button>'
+    + '</div></div></div>';
+}
+
+function selectSize(label){ const container=label.closest('.size-selector'); container.querySelectorAll('.size-option').forEach(l=>l.classList.remove('selected')); label.classList.add('selected'); }
+
+function buyPrint(artworkId, safeId) {
+  const selected = document.querySelector('#sizes-' + safeId + ' .size-option.selected');
+  if (!selected) { showToast('Please select a size.'); return; }
   const sizeIndex = parseInt(selected.querySelector('input').value, 10);
   const size = PRINT_SIZES[sizeIndex];
   const w = getArtwork(artworkId);
   if (!w) return;
-
-  // Show shipping form before opening Flutterwave
   openShippingForm(artworkId, size, w);
 }
 
@@ -482,93 +483,49 @@ function openShippingForm(artworkId, size, artwork) {
   const existing = document.getElementById('shippingFormOverlay');
   if (existing) existing.remove();
 
-  // Store size data safely on window — avoids JSON-in-onclick quote clash
+  // Store size and artwork ID on window — safe, no JSON-in-onclick needed
   window._pendingPrintSize = size;
   window._pendingArtworkId = artworkId;
 
   const overlay = document.createElement('div');
   overlay.id = 'shippingFormOverlay';
-  overlay.style.cssText = `
-    position:fixed;inset:0;background:rgba(8,7,6,.88);z-index:9000;
-    display:flex;align-items:center;justify-content:center;padding:24px;
-    overflow-y:auto;
-  `;
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(8,7,6,.88);z-index:9000;display:flex;align-items:center;justify-content:center;padding:24px;overflow-y:auto;';
 
-  overlay.innerHTML = `
-    <div style="
-      background:var(--surface);border:1px solid var(--border);
-      padding:42px;max-width:560px;width:100%;position:relative;
-    ">
-      <button onclick="document.getElementById('shippingFormOverlay').remove()" style="
-        position:absolute;top:18px;right:22px;background:none;border:none;
-        color:var(--cream-dim);font-size:22px;cursor:pointer;line-height:1;
-      ">✕</button>
+  const box = document.createElement('div');
+  box.style.cssText = 'background:var(--surface);border:1px solid var(--border);padding:42px;max-width:560px;width:100%;position:relative;';
 
-      <p style="font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;">
-        Shipping Details
-      </p>
-      <h2 style="font-family:var(--font-display);font-size:28px;margin-bottom:6px;">
-        ${artwork.title}
-      </h2>
-      <p style="font-size:13px;color:var(--cream-dim);margin-bottom:28px;">
-        ${size.label} · ${size.price} · Limited Edition of 25
-      </p>
+  box.innerHTML = ''
+    + '<button id="sfCloseBtn" style="position:absolute;top:18px;right:22px;background:none;border:none;color:var(--cream-dim);font-size:22px;cursor:pointer;line-height:1;">✕</button>'
+    + '<p style="font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;">Shipping Details</p>'
+    + '<h2 style="font-family:var(--font-display);font-size:28px;margin-bottom:6px;">' + artwork.title + '</h2>'
+    + '<p style="font-size:13px;color:var(--cream-dim);margin-bottom:28px;">' + size.label + ' · ' + size.price + ' · Limited Edition of 25</p>'
+    + '<div style="display:flex;flex-direction:column;gap:14px;">'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">'
+    + '<div class="form-group"><label>Full Name *</label><input id="sf-name" type="text" placeholder="Your full name"></div>'
+    + '<div class="form-group"><label>Email Address *</label><input id="sf-email" type="email" placeholder="you@email.com"></div>'
+    + '</div>'
+    + '<div class="form-group"><label>Phone Number * <span style="font-size:11px;color:var(--muted)">(include country code, e.g. +1 555 000 0000)</span></label><input id="sf-phone" type="tel" placeholder="+1 555 000 0000"></div>'
+    + '<div class="form-group"><label>Street Address *</label><input id="sf-street" type="text" placeholder="House number, street name"></div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">'
+    + '<div class="form-group"><label>City *</label><input id="sf-city" type="text" placeholder="City"></div>'
+    + '<div class="form-group"><label>State / Province *</label><input id="sf-state" type="text" placeholder="State or province"></div>'
+    + '</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">'
+    + '<div class="form-group"><label>Postal / ZIP Code *</label><input id="sf-postal" type="text" placeholder="Postal code"></div>'
+    + '<div class="form-group"><label>Country *</label><input id="sf-country" type="text" placeholder="Country"></div>'
+    + '</div>'
+    + '</div>'
+    + '<button id="proceedPaymentBtn" class="btn-primary" style="width:100%;text-align:center;margin-top:24px;display:block;">Proceed to Payment → ' + size.price + '</button>'
+    + '<p style="font-size:11.5px;color:var(--muted);margin-top:14px;line-height:1.7;text-align:center;">Your address is used only to ship your print. Free worldwide shipping included.</p>';
 
-      <div style="display:flex;flex-direction:column;gap:14px;">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-          <div class="form-group">
-            <label for="sf-name">Full Name *</label>
-            <input id="sf-name" type="text" placeholder="Your full name">
-          </div>
-          <div class="form-group">
-            <label for="sf-email">Email Address *</label>
-            <input id="sf-email" type="email" placeholder="you@email.com">
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="sf-phone">Phone Number * <span style="font-size:11px;color:var(--muted)">(include country code, e.g. +1 555 000 0000)</span></label>
-          <input id="sf-phone" type="tel" placeholder="+1 555 000 0000">
-        </div>
-        <div class="form-group">
-          <label for="sf-street">Street Address *</label>
-          <input id="sf-street" type="text" placeholder="House number, street name">
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-          <div class="form-group">
-            <label for="sf-city">City *</label>
-            <input id="sf-city" type="text" placeholder="City">
-          </div>
-          <div class="form-group">
-            <label for="sf-state">State / Province *</label>
-            <input id="sf-state" type="text" placeholder="State or province">
-          </div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-          <div class="form-group">
-            <label for="sf-postal">Postal / ZIP Code *</label>
-            <input id="sf-postal" type="text" placeholder="Postal code">
-          </div>
-          <div class="form-group">
-            <label for="sf-country">Country *</label>
-            <input id="sf-country" type="text" placeholder="Country">
-          </div>
-        </div>
-      </div>
-
-      <button id="proceedPaymentBtn"
-        class="btn-primary" style="width:100%;text-align:center;margin-top:24px;display:block;">
-        Proceed to Payment → ${size.price}
-      </button>
-
-      <p style="font-size:11.5px;color:var(--muted);margin-top:14px;line-height:1.7;text-align:center;">
-        Your address is used only to ship your print. Free worldwide shipping included.
-      </p>
-    </div>
-  `;
-
+  overlay.appendChild(box);
   document.body.appendChild(overlay);
 
-  // Attach click handler directly in JS — no inline onclick, no quote issues
+  // All click handlers attached in JS — zero inline onclick, zero quote conflicts
+  document.getElementById('sfCloseBtn').addEventListener('click', function(){
+    document.getElementById('shippingFormOverlay').remove();
+  });
+
   document.getElementById('proceedPaymentBtn').addEventListener('click', proceedToPayment);
 }
 
@@ -582,26 +539,27 @@ function proceedToPayment() {
   }
 
   const fields = {
-    name: document.getElementById('sf-name')?.value.trim(),
-    email: document.getElementById('sf-email')?.value.trim(),
-    phone: document.getElementById('sf-phone')?.value.trim(),
-    street: document.getElementById('sf-street')?.value.trim(),
-    city: document.getElementById('sf-city')?.value.trim(),
-    state: document.getElementById('sf-state')?.value.trim(),
-    postal: document.getElementById('sf-postal')?.value.trim(),
-    country: document.getElementById('sf-country')?.value.trim()
+    name:    document.getElementById('sf-name')   ? document.getElementById('sf-name').value.trim()   : '',
+    email:   document.getElementById('sf-email')  ? document.getElementById('sf-email').value.trim()  : '',
+    phone:   document.getElementById('sf-phone')  ? document.getElementById('sf-phone').value.trim()  : '',
+    street:  document.getElementById('sf-street') ? document.getElementById('sf-street').value.trim() : '',
+    city:    document.getElementById('sf-city')   ? document.getElementById('sf-city').value.trim()   : '',
+    state:   document.getElementById('sf-state')  ? document.getElementById('sf-state').value.trim()  : '',
+    postal:  document.getElementById('sf-postal') ? document.getElementById('sf-postal').value.trim() : '',
+    country: document.getElementById('sf-country')? document.getElementById('sf-country').value.trim(): ''
   };
 
-  const missing = Object.entries(fields)
-    .filter(([k, v]) => !v)
-    .map(([k]) => k);
+  var missing = [];
+  for (var key in fields) {
+    if (!fields[key]) missing.push(key);
+  }
 
   if (missing.length) {
     showToast('Please fill in all required shipping fields.');
     return;
   }
 
-  if (!fields.email.includes('@')) {
+  if (fields.email.indexOf('@') === -1) {
     showToast('Please enter a valid email address.');
     return;
   }
@@ -615,43 +573,37 @@ function proceedToPayment() {
     return;
   }
 
-  // If Flutterwave is already loaded, go immediately
+  // If Flutterwave already loaded, launch immediately
   if (window.flwReady && typeof FlutterwaveCheckout !== 'undefined') {
+    document.getElementById('shippingFormOverlay') && document.getElementById('shippingFormOverlay').remove();
     launchFlutterwave(publicKey, size, artworkId, w, fields);
     return;
   }
 
-  // Not loaded yet — show a brief spinner and wait up to 8 seconds
+  // Still loading — wait up to 8 seconds then launch
   const btn = document.getElementById('proceedPaymentBtn');
-  if (btn) {
-    btn.textContent = 'Opening payment...';
-    btn.disabled = true;
-  }
+  if (btn) { btn.textContent = 'Opening payment...'; btn.disabled = true; }
 
-  let waited = 0;
-  const interval = setInterval(function() {
+  var waited = 0;
+  var interval = setInterval(function() {
     waited += 200;
     if (window.flwReady && typeof FlutterwaveCheckout !== 'undefined') {
       clearInterval(interval);
-      document.getElementById('shippingFormOverlay')?.remove();
+      var overlay = document.getElementById('shippingFormOverlay');
+      if (overlay) overlay.remove();
       launchFlutterwave(publicKey, size, artworkId, w, fields);
     } else if (waited >= 8000) {
       clearInterval(interval);
-      if (btn) {
-        btn.textContent = `Proceed to Payment → ${size.price}`;
-        btn.disabled = false;
-      }
+      if (btn) { btn.textContent = 'Proceed to Payment \u2192 ' + size.price; btn.disabled = false; }
       showToast('Connection is slow. Please check your internet and try again.');
     }
   }, 200);
 }
 
 function launchFlutterwave(publicKey, size, artworkId, w, fields) {
-  document.getElementById('shippingFormOverlay')?.remove();
-
   FlutterwaveCheckout({
     public_key: publicKey,
-    tx_ref: `print-${artworkId}-${size.flwPlan}-${Date.now()}`,
+    tx_ref: 'print-' + artworkId + '-' + size.flwPlan + '-' + Date.now(),
     amount: size.amount,
     currency: size.currency,
     payment_options: 'card, banktransfer, ussd',
@@ -676,8 +628,8 @@ function launchFlutterwave(publicKey, size, artworkId, w, fields) {
       phonenumber: fields.phone
     },
     customizations: {
-      title: 'Caster Art — Limited Print',
-      description: `${w.title} · ${size.label} · Edition of 25`,
+      title: 'Caster Art \u2014 Limited Print',
+      description: w.title + ' \u00b7 ' + size.label + ' \u00b7 Edition of 25',
       logo: 'https://casterart.com/assets/images/logo.png'
     },
     callback: function(response) {
@@ -691,48 +643,7 @@ function launchFlutterwave(publicKey, size, artworkId, w, fields) {
   });
 }
 
-  FlutterwaveCheckout({
-    public_key: publicKey,
-    tx_ref: `print-${artworkId}-${size.flwPlan}-${Date.now()}`,
-    amount: size.amount,
-    currency: size.currency,
-    payment_options: 'card, banktransfer, ussd',
-    meta: {
-      order_type: 'print',
-      artwork_id: artworkId,
-      artwork_title: w.title,
-      print_size: size.label,
-      print_size_code: size.flwPlan,
-      shipping_name: fields.name,
-      shipping_email: fields.email,
-      shipping_phone: fields.phone,
-      shipping_street: fields.street,
-      shipping_city: fields.city,
-      shipping_state: fields.state,
-      shipping_postal: fields.postal,
-      shipping_country: fields.country
-    },
-    customer: {
-      email: fields.email,
-      name: fields.name,
-      phonenumber: fields.phone
-    },
-    customizations: {
-      title: 'Caster Art — Limited Print',
-      description: `${w.title} · ${size.label} · Edition of 25`,
-      logo: 'https://casterart.com/assets/images/logo.png'
-    },
-    callback: function(response) {
-      if (response.status === 'successful' || response.status === 'completed') {
-        showToast('Payment confirmed. Your print is on its way to being made.', true);
-      } else {
-        showToast('Payment was not completed. Please try again.');
-      }
-    },
-    onclose: function() {}
-  });
-}
-function openModal(id){ const w=getArtwork(id); if(!w) return; const img=document.getElementById('modalImg'); img.src=localImage(w.image); img.dataset.fallback=w.fallbackImage || w.image; document.getElementById('modalEyebrow').textContent=(w.series ? getSeriesLabel(w.series) + ' · ' : '') + `${w.medium} · ${w.year}`; document.getElementById('modalTitle').textContent=w.title; document.getElementById('modalMeta').textContent=`${w.medium} on Paper · ${w.year}${w.series ? ' · ' + getSeriesLabel(w.series) : ''}`; document.getElementById('modalStatement').textContent=w.statement; const cta=document.getElementById('modalCta'); const pcta=document.getElementById('modalPrintCta'); if(!w.available || w.printOnly){ cta.textContent='Original Sold'; cta.href='#'; cta.onclick=e=>e.preventDefault(); } else { const subject=encodeURIComponent(`Original Inquiry: ${w.title}`); const body=encodeURIComponent(`Hello,\n\nI am interested in the original "${w.title}" (${w.medium}, ${w.year}).\n\nPlease share pricing and availability.\n\nThank you.`); cta.textContent='Inquire About Original'; cta.href=`mailto:${SITE_EMAIL}?subject=${subject}&body=${body}`; cta.onclick=null; } pcta.href=pageHref(`prints.html#${w.id}`); pcta.textContent='Order Print'; document.getElementById('modalOverlay').classList.add('active'); document.body.style.overflow='hidden'; applyImageFallbacks(); }
+function openModal(id){ const w=getArtwork(id); if(!w) return; const img=document.getElementById('modalImg'); img.src=localImage(w.image); img.dataset.fallback=w.fallbackImage || w.image; document.getElementById('modalEyebrow').textContent=(w.series ? getSeriesLabel(w.series) + ' · ' : '') + w.medium + ' · ' + w.year; document.getElementById('modalTitle').textContent=w.title; document.getElementById('modalMeta').textContent=w.medium + ' on Paper · ' + w.year + (w.series ? ' · ' + getSeriesLabel(w.series) : ''); document.getElementById('modalStatement').textContent=w.statement; const cta=document.getElementById('modalCta'); const pcta=document.getElementById('modalPrintCta'); if(!w.available || w.printOnly){ cta.textContent='Original Sold'; cta.href='#'; cta.onclick=function(e){e.preventDefault();}; } else { const subject=encodeURIComponent('Original Inquiry: ' + w.title); const body=encodeURIComponent('Hello,\n\nI am interested in the original "' + w.title + '" (' + w.medium + ', ' + w.year + ').\n\nPlease share pricing and availability.\n\nThank you.'); cta.textContent='Inquire About Original'; cta.href='mailto:' + SITE_EMAIL + '?subject=' + subject + '&body=' + body; cta.onclick=null; } pcta.href=pageHref('prints.html#' + w.id); pcta.textContent='Order Print'; document.getElementById('modalOverlay').classList.add('active'); document.body.style.overflow='hidden'; applyImageFallbacks(); }
 function closeModal(){ const overlay=document.getElementById('modalOverlay'); if(overlay){overlay.classList.remove('active');document.body.style.overflow='';} }
 function handleModalBgClose(e){ if(e.target===document.getElementById('modalOverlay')) closeModal(); }
 function toggleMobileNav(){ document.getElementById('mobileNav').classList.toggle('open'); document.getElementById('mobileOverlay').classList.toggle('active'); }
@@ -743,97 +654,57 @@ function dismissPopup(){ const overlay=document.getElementById('popupOverlay'); 
 async function handlePopupSubscribe(){ const name=document.getElementById('popupName').value.trim(); const email=document.getElementById('popupEmail').value.trim(); if(!name){showToast('Please enter your first name.');return;} if(!email||!email.includes('@')){showToast('Please enter a valid email address.');return;} await subscribeToList(name,email,'popup'); }
 async function subscribeToList(firstName,email,source='newsletter'){ try{ const resp=await fetch('/.netlify/functions/brevo-subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({firstName,email,source})}); if(resp.ok){ localStorage.setItem('caster_subscribed','true'); if(source==='popup'){document.getElementById('popupForm').style.display='none';document.getElementById('popupSuccess').style.display='block';setTimeout(dismissPopup,2500);} else showToast('You are in. Welcome to the inner circle.',true); } else showToast('Sign-up is not ready yet. Please try again later.'); } catch(err){ console.warn(err); showToast('Sign-up is not ready yet. Please try again later.'); } }
 async function handleNewsletterSubmit(nameId, emailId) {
-  const firstName = document.getElementById(nameId)?.value?.trim();
-  const email = document.getElementById(emailId)?.value?.trim();
-
-  if (!firstName || !email) {
-    showToast('Please enter your first name and email address.', 'error');
-    return;
-  }
-
-  if (!email.includes('@')) {
-    showToast('Please enter a valid email address.', 'error');
-    return;
-  }
-
+  const firstName = document.getElementById(nameId) ? document.getElementById(nameId).value.trim() : '';
+  const email = document.getElementById(emailId) ? document.getElementById(emailId).value.trim() : '';
+  if (!firstName || !email) { showToast('Please enter your first name and email address.'); return; }
+  if (!email.includes('@')) { showToast('Please enter a valid email address.'); return; }
   try {
     const resp = await fetch('/.netlify/functions/brevo-subscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        firstName,
-        email,
-        source: 'newsletter'
-      })
+      body: JSON.stringify({ firstName, email, source: 'newsletter' })
     });
-
     const data = await resp.json();
-
     if (resp.ok && data.ok) {
-      showToast("You're on the list. First access is yours.", 'success');
+      showToast("You're on the list. First access is yours.", true);
       document.getElementById(nameId).value = '';
       document.getElementById(emailId).value = '';
     } else {
-      showToast('Something went wrong. Please try again.', 'error');
+      showToast('Something went wrong. Please try again.');
     }
   } catch (err) {
     console.error('Newsletter error:', err);
-    showToast('Something went wrong. Please try again.', 'error');
+    showToast('Something went wrong. Please try again.');
   }
 }
-async function handleCommissionSubmit(event){ 
-  if(event) event.preventDefault(); 
-
-  const form = document.getElementById('commissionForm'); 
-  if(!form) return; 
-
-  const required = ['cf-name','cf-email','cf-vision','cf-country','cf-references']; 
-
-  for(const id of required){ 
-    const el = document.getElementById(id); 
-    if(!el || (el.type === 'file' ? !el.files.length : !el.value.trim())){ 
-      showToast('Please complete the required commission details.'); 
-      return; 
-    } 
+async function handleCommissionSubmit(event){
+  if(event) event.preventDefault();
+  const form = document.getElementById('commissionForm');
+  if(!form) return;
+  const required = ['cf-name','cf-email','cf-vision','cf-country','cf-references'];
+  for(const id of required){
+    const el = document.getElementById(id);
+    if(!el || (el.type === 'file' ? !el.files.length : !el.value.trim())){
+      showToast('Please complete the required commission details.');
+      return;
+    }
   }
-
   const referenceInput = document.getElementById('cf-references');
   const files = referenceInput ? Array.from(referenceInput.files) : [];
   const maxFiles = 3;
-  const maxFileSize = 2 * 1024 * 1024; // 2MB
+  const maxFileSize = 2 * 1024 * 1024;
   const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-
-  if(files.length > maxFiles){
-    showToast('Please upload no more than 3 reference photos.');
-    return;
-  }
-
+  if(files.length > maxFiles){ showToast('Please upload no more than 3 reference photos.'); return; }
   for(const file of files){
-    if(!allowedTypes.includes(file.type)){
-      showToast('Reference photos must be JPG, PNG, or WebP.');
-      return;
-    }
-
-    if(file.size > maxFileSize){
-      showToast(`${file.name} is too large. Maximum size is 2MB per file.`);
-      return;
-    }
+    if(!allowedTypes.includes(file.type)){ showToast('Reference photos must be JPG, PNG, or WebP.'); return; }
+    if(file.size > maxFileSize){ showToast(file.name + ' is too large. Maximum size is 2MB per file.'); return; }
   }
-
-  const data = new FormData(form); 
-
-  try{ 
-    const resp = await fetch('/.netlify/functions/commission-inquiry',{method:'POST',body:data}); 
-
-    if(resp.ok){ 
-      showToast('Inquiry sent. I will reply personally.', true); 
-      form.reset(); 
-    } else { 
-      fallbackCommissionEmail(form); 
-    } 
-  } catch(err){ 
-    fallbackCommissionEmail(form); 
-  } 
+  const data = new FormData(form);
+  try{
+    const resp = await fetch('/.netlify/functions/commission-inquiry',{method:'POST',body:data});
+    if(resp.ok){ showToast('Inquiry sent. I will reply personally.', true); form.reset(); }
+    else { fallbackCommissionEmail(form); }
+  } catch(err){ fallbackCommissionEmail(form); }
 }
-function fallbackCommissionEmail(form){ const get=id=>document.getElementById(id)?.value||''; const subject=encodeURIComponent('Commission Inquiry'); const body=encodeURIComponent(`Name: ${get('cf-name')}\nEmail: ${get('cf-email')}\nPhone/WhatsApp: ${get('cf-phone')}\nCountry: ${get('cf-country')}\nCity: ${get('cf-city')}\nPreferred size: ${get('cf-size')}\nMedium: ${get('cf-medium')}\nDeadline: ${get('cf-deadline')}\nBudget: ${get('cf-budget')}\nSubjects: ${get('cf-subjects')}\nShipping address/notes: ${get('cf-shipping')}\n\nVision:\n${get('cf-vision')}\n\nReference photos were selected on the website form. If they were not attached automatically, please include them in your reply.`); window.location.href=`mailto:${SITE_EMAIL}?subject=${subject}&body=${body}`; }
+function fallbackCommissionEmail(form){ const get=id=>document.getElementById(id)?document.getElementById(id).value:''; const subject=encodeURIComponent('Commission Inquiry'); const body=encodeURIComponent('Name: ' + get('cf-name') + '\nEmail: ' + get('cf-email') + '\nPhone/WhatsApp: ' + get('cf-phone') + '\nCountry: ' + get('cf-country') + '\nCity: ' + get('cf-city') + '\nPreferred size: ' + get('cf-size') + '\nMedium: ' + get('cf-medium') + '\nDeadline: ' + get('cf-deadline') + '\nBudget: ' + get('cf-budget') + '\nSubjects: ' + get('cf-subjects') + '\nShipping address/notes: ' + get('cf-shipping') + '\n\nVision:\n' + get('cf-vision') + '\n\nReference photos were selected on the website form. If they were not attached automatically, please include them in your reply.'); window.location.href='mailto:' + SITE_EMAIL + '?subject=' + subject + '&body=' + body; }
 function showToast(msg,success=false){ const t=document.getElementById('toast'); if(!t) return; t.textContent=msg; t.className='toast'+(success?' success':''); t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3500); }
