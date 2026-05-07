@@ -477,9 +477,12 @@ function buyPrint(artworkId, safeId) {
 }
 
 function openShippingForm(artworkId, size, artwork) {
-  // Remove any existing form
   const existing = document.getElementById('shippingFormOverlay');
   if (existing) existing.remove();
+
+  // Store size data safely on window — avoids JSON-in-onclick quote clash
+  window._pendingPrintSize = size;
+  window._pendingArtworkId = artworkId;
 
   const overlay = document.createElement('div');
   overlay.id = 'shippingFormOverlay';
@@ -513,44 +516,44 @@ function openShippingForm(artworkId, size, artwork) {
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
           <div class="form-group">
             <label for="sf-name">Full Name *</label>
-            <input id="sf-name" type="text" placeholder="Your full name" required>
+            <input id="sf-name" type="text" placeholder="Your full name">
           </div>
           <div class="form-group">
             <label for="sf-email">Email Address *</label>
-            <input id="sf-email" type="email" placeholder="you@email.com" required>
+            <input id="sf-email" type="email" placeholder="you@email.com">
           </div>
         </div>
         <div class="form-group">
           <label for="sf-phone">Phone Number * <span style="font-size:11px;color:var(--muted)">(include country code, e.g. +1 555 000 0000)</span></label>
-          <input id="sf-phone" type="tel" placeholder="+1 555 000 0000" required>
+          <input id="sf-phone" type="tel" placeholder="+1 555 000 0000">
         </div>
         <div class="form-group">
           <label for="sf-street">Street Address *</label>
-          <input id="sf-street" type="text" placeholder="House number, street name" required>
+          <input id="sf-street" type="text" placeholder="House number, street name">
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
           <div class="form-group">
             <label for="sf-city">City *</label>
-            <input id="sf-city" type="text" placeholder="City" required>
+            <input id="sf-city" type="text" placeholder="City">
           </div>
           <div class="form-group">
             <label for="sf-state">State / Province *</label>
-            <input id="sf-state" type="text" placeholder="State or province" required>
+            <input id="sf-state" type="text" placeholder="State or province">
           </div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
           <div class="form-group">
             <label for="sf-postal">Postal / ZIP Code *</label>
-            <input id="sf-postal" type="text" placeholder="Postal code" required>
+            <input id="sf-postal" type="text" placeholder="Postal code">
           </div>
           <div class="form-group">
             <label for="sf-country">Country *</label>
-            <input id="sf-country" type="text" placeholder="Country" required>
+            <input id="sf-country" type="text" placeholder="Country">
           </div>
         </div>
       </div>
 
-      <button onclick="proceedToPayment('${artworkId}', ${JSON.stringify(size).replace(/'/g,"\\'")})" 
+      <button id="proceedPaymentBtn"
         class="btn-primary" style="width:100%;text-align:center;margin-top:24px;display:block;">
         Proceed to Payment → ${size.price}
       </button>
@@ -562,10 +565,20 @@ function openShippingForm(artworkId, size, artwork) {
   `;
 
   document.body.appendChild(overlay);
+
+  // Attach click handler directly in JS — no inline onclick, no quote issues
+  document.getElementById('proceedPaymentBtn').addEventListener('click', proceedToPayment);
 }
 
-function proceedToPayment(artworkId, size) {
-  // Validate all fields
+function proceedToPayment() {
+  const size = window._pendingPrintSize;
+  const artworkId = window._pendingArtworkId;
+
+  if (!size || !artworkId) {
+    showToast('Something went wrong. Please try again.');
+    return;
+  }
+
   const fields = {
     name: document.getElementById('sf-name')?.value.trim(),
     email: document.getElementById('sf-email')?.value.trim(),
@@ -574,7 +587,7 @@ function proceedToPayment(artworkId, size) {
     city: document.getElementById('sf-city')?.value.trim(),
     state: document.getElementById('sf-state')?.value.trim(),
     postal: document.getElementById('sf-postal')?.value.trim(),
-    country: document.getElementById('sf-country')?.value.trim(),
+    country: document.getElementById('sf-country')?.value.trim()
   };
 
   const missing = Object.entries(fields)
@@ -594,13 +607,18 @@ function proceedToPayment(artworkId, size) {
   const w = getArtwork(artworkId);
   if (!w) return;
 
+  // Check Flutterwave script is loaded
+  if (typeof FlutterwaveCheckout === 'undefined') {
+    showToast('Payment is loading. Please try again in a moment.');
+    return;
+  }
+
   const publicKey = window.FLW_PUBLIC_KEY;
   if (!publicKey) {
     showToast('Payment is not configured yet. Please contact us directly.');
     return;
   }
 
-  // Close shipping form
   document.getElementById('shippingFormOverlay')?.remove();
 
   FlutterwaveCheckout({
