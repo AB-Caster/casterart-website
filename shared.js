@@ -3,8 +3,6 @@
    =========================================== */
 
 
-window.FLW_PUBLIC_KEY = 'FLWPUBK_TEST-d703adb5c6c5851fc84f59fd38748c0b-X';
-
 // Edit most website content here: artworks, series, print prices, payment links, navigation, footer, and popup copy.
 // Keep API keys out of this file. Backend keys belong in Netlify environment variables only.
 
@@ -520,7 +518,7 @@ function openShippingForm(artworkId, size, artwork) {
   document.getElementById('proceedPaymentBtn').addEventListener('click', proceedToPayment);
 }
 
-function proceedToPayment() {
+async function proceedToPayment() {
   const size = window._pendingPrintSize;
   const artworkId = window._pendingArtworkId;
 
@@ -530,24 +528,21 @@ function proceedToPayment() {
   }
 
   const fields = {
-    name:    document.getElementById('sf-name')   ? document.getElementById('sf-name').value.trim()   : '',
-    email:   document.getElementById('sf-email')  ? document.getElementById('sf-email').value.trim()  : '',
-    phone:   document.getElementById('sf-phone')  ? document.getElementById('sf-phone').value.trim()  : '',
-    street:  document.getElementById('sf-street') ? document.getElementById('sf-street').value.trim() : '',
-    city:    document.getElementById('sf-city')   ? document.getElementById('sf-city').value.trim()   : '',
-    state:   document.getElementById('sf-state')  ? document.getElementById('sf-state').value.trim()  : '',
-    postal:  document.getElementById('sf-postal') ? document.getElementById('sf-postal').value.trim() : '',
-    country: document.getElementById('sf-country')? document.getElementById('sf-country').value.trim(): ''
+    name:    document.getElementById('sf-name')    ? document.getElementById('sf-name').value.trim()    : '',
+    email:   document.getElementById('sf-email')   ? document.getElementById('sf-email').value.trim()   : '',
+    phone:   document.getElementById('sf-phone')   ? document.getElementById('sf-phone').value.trim()   : '',
+    street:  document.getElementById('sf-street')  ? document.getElementById('sf-street').value.trim()  : '',
+    city:    document.getElementById('sf-city')    ? document.getElementById('sf-city').value.trim()    : '',
+    state:   document.getElementById('sf-state')   ? document.getElementById('sf-state').value.trim()   : '',
+    postal:  document.getElementById('sf-postal')  ? document.getElementById('sf-postal').value.trim()  : '',
+    country: document.getElementById('sf-country') ? document.getElementById('sf-country').value.trim() : ''
   };
 
-  var missing = [];
   for (var key in fields) {
-    if (!fields[key]) missing.push(key);
-  }
-
-  if (missing.length) {
-    showToast('Please fill in all required shipping fields.');
-    return;
+    if (!fields[key]) {
+      showToast('Please fill in all required shipping fields.');
+      return;
+    }
   }
 
   if (fields.email.indexOf('@') === -1) {
@@ -556,67 +551,66 @@ function proceedToPayment() {
   }
 
   const w = getArtwork(artworkId);
-  if (!w) return;
-
-  const publicKey = window.FLW_PUBLIC_KEY;
-  if (!publicKey) {
-    showToast('Payment is not configured yet. Please contact us directly.');
+  if (!w) {
+    showToast('Artwork not found. Please refresh and try again.');
     return;
   }
 
-if (typeof FlutterwaveCheckout !== 'function') {
-  showToast('Payment gateway did not load. Please refresh and try again.');
-  console.error('FlutterwaveCheckout is missing. Check that checkout.flutterwave.com/v3.js loaded.');
-  return;
-}
+  const button = document.getElementById('proceedPaymentBtn');
+  if (button) {
+    button.disabled = true;
+    button.textContent = 'Preparing secure checkout...';
+  }
 
-var overlay = document.getElementById('shippingFormOverlay');
-if (overlay) overlay.remove();
+  try {
+    const response = await fetch('/.netlify/functions/create-flutterwave-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        artworkId: artworkId,
+        artworkTitle: w.title,
+        sizeLabel: size.label,
+        sizeCode: size.flwPlan,
+        amount: size.amount,
+        currency: size.currency,
+        customerName: fields.name,
+        customerEmail: fields.email,
+        customerPhone: fields.phone,
+        shippingAddress: {
+          street: fields.street,
+          city: fields.city,
+          state: fields.state,
+          postal: fields.postal,
+          country: fields.country
+        }
+      })
+    });
 
-launchFlutterwave(publicKey, size, artworkId, w, fields);
-}
+    const result = await response.json();
 
-function launchFlutterwave(publicKey, size, artworkId, w, fields) {
-  FlutterwaveCheckout({
-    public_key: publicKey,
-    tx_ref: 'print-' + artworkId + '-' + size.flwPlan + '-' + Date.now(),
-    amount: size.amount,
-    currency: size.currency,
-    payment_options: 'card, banktransfer, ussd',
-    meta: {
-      order_type: 'print',
-      artwork_id: artworkId,
-      artwork_title: w.title,
-      print_size: size.label,
-      print_size_code: size.flwPlan,
-      shipping_name: fields.name,
-      shipping_email: fields.email,
-      shipping_phone: fields.phone,
-      shipping_street: fields.street,
-      shipping_city: fields.city,
-      shipping_state: fields.state,
-      shipping_postal: fields.postal,
-      shipping_country: fields.country
-    },
-    customer: {
-      email: fields.email,
-      name: fields.name,
-      phonenumber: fields.phone
-    },
-    customizations: {
-      title: 'Caster Art \u2014 Limited Print',
-      description: w.title + ' \u00b7 ' + size.label + ' \u00b7 Edition of 25',
-      logo: 'https://casterart.com/assets/images/logo.png'
-    },
-    callback: function(response) {
-      if (response.status === 'successful' || response.status === 'completed') {
-        showToast('Payment confirmed. Your print is on its way to being made.', true);
-      } else {
-        showToast('Payment was not completed. Please try again.');
+    if (!response.ok || !result.link) {
+      console.error('Checkout creation failed:', result);
+      showToast(result.error || 'Payment could not be started. Please try again.');
+
+      if (button) {
+        button.disabled = false;
+        button.textContent = 'Proceed to Payment → ' + size.price;
       }
-    },
-    onclose: function() {}
-  });
+
+      return;
+    }
+
+    window.location.href = result.link;
+
+  } catch (error) {
+    console.error('Payment start failed:', error);
+    showToast('Payment could not be started. Please try again.');
+
+    if (button) {
+      button.disabled = false;
+      button.textContent = 'Proceed to Payment → ' + size.price;
+    }
+  }
 }
 
 function openModal(id){ const w=getArtwork(id); if(!w) return; const img=document.getElementById('modalImg'); img.src=localImage(w.image); img.dataset.fallback=w.fallbackImage || w.image; document.getElementById('modalEyebrow').textContent=(w.series ? getSeriesLabel(w.series) + ' · ' : '') + w.medium + ' · ' + w.year; document.getElementById('modalTitle').textContent=w.title; document.getElementById('modalMeta').textContent=w.medium + ' on Paper · ' + w.year + (w.series ? ' · ' + getSeriesLabel(w.series) : ''); document.getElementById('modalStatement').textContent=w.statement; const cta=document.getElementById('modalCta'); const pcta=document.getElementById('modalPrintCta'); if(!w.available || w.printOnly){ cta.textContent='Original Sold'; cta.href='#'; cta.onclick=function(e){e.preventDefault();}; } else { const subject=encodeURIComponent('Original Inquiry: ' + w.title); const body=encodeURIComponent('Hello,\n\nI am interested in the original "' + w.title + '" (' + w.medium + ', ' + w.year + ').\n\nPlease share pricing and availability.\n\nThank you.'); cta.textContent='Inquire About Original'; cta.href='mailto:' + SITE_EMAIL + '?subject=' + subject + '&body=' + body; cta.onclick=null; } pcta.href=pageHref('prints.html#' + w.id); pcta.textContent='Order Print'; document.getElementById('modalOverlay').classList.add('active'); document.body.style.overflow='hidden'; applyImageFallbacks(); }
