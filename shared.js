@@ -564,45 +564,16 @@ function proceedToPayment() {
     return;
   }
 
-ensureFlutterwaveLoaded(function () {
-  var overlay = document.getElementById('shippingFormOverlay');
-  if (overlay) overlay.remove();
+if (typeof FlutterwaveCheckout !== 'function') {
+  showToast('Payment gateway did not load. Please refresh and try again.');
+  console.error('FlutterwaveCheckout is missing. Check that checkout.flutterwave.com/v3.js loaded.');
+  return;
+}
 
-  launchFlutterwave(publicKey, size, artworkId, w, fields);
-});
+var overlay = document.getElementById('shippingFormOverlay');
+if (overlay) overlay.remove();
 
-   function ensureFlutterwaveLoaded(callback) {
-  if (typeof window.FlutterwaveCheckout === 'function') {
-    callback();
-    return;
-  }
-
-  var existing = document.getElementById('flutterwaveCheckoutScript');
-  if (existing) {
-    existing.addEventListener('load', function () {
-      callback();
-    });
-    existing.addEventListener('error', function () {
-      showToast('Payment gateway could not load. Please try another browser or disable ad blocker.');
-    });
-    return;
-  }
-
-  var script = document.createElement('script');
-  script.id = 'flutterwaveCheckoutScript';
-  script.src = 'https://checkout.flutterwave.com/v3.js';
-  script.onload = function () {
-    if (typeof window.FlutterwaveCheckout === 'function') {
-      callback();
-    } else {
-      showToast('Payment gateway loaded incorrectly. Please refresh and try again.');
-    }
-  };
-  script.onerror = function () {
-    showToast('Payment gateway could not load. Please try another browser or disable ad blocker.');
-  };
-
-  document.head.appendChild(script);
+launchFlutterwave(publicKey, size, artworkId, w, fields);
 }
 
 function launchFlutterwave(publicKey, size, artworkId, w, fields) {
