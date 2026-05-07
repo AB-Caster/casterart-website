@@ -472,46 +472,75 @@ function openShippingForm(artworkId, size, artwork) {
   const existing = document.getElementById('shippingFormOverlay');
   if (existing) existing.remove();
 
-  // Store size and artwork ID on window — safe, no JSON-in-onclick needed
   window._pendingPrintSize = size;
   window._pendingArtworkId = artworkId;
 
   const overlay = document.createElement('div');
   overlay.id = 'shippingFormOverlay';
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(8,7,6,.88);z-index:9000;display:flex;align-items:center;justify-content:center;padding:24px;overflow-y:auto;';
+  overlay.style.cssText =
+    'position:fixed;inset:0;background:rgba(8,7,6,.88);z-index:9000;display:flex;align-items:flex-start;justify-content:center;padding:18px;overflow-y:auto;';
 
   const box = document.createElement('div');
-  box.style.cssText = 'background:var(--surface);border:1px solid var(--border);padding:42px;max-width:560px;width:100%;position:relative;';
+  box.style.cssText =
+    'background:var(--surface);border:1px solid var(--border);padding:32px 22px;max-width:560px;width:100%;position:relative;margin:24px auto;box-sizing:border-box;';
 
   box.innerHTML = ''
-    + '<button id="sfCloseBtn" style="position:absolute;top:18px;right:22px;background:none;border:none;color:var(--cream-dim);font-size:22px;cursor:pointer;line-height:1;">✕</button>'
-    + '<p style="font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;">Shipping Details</p>'
-    + '<h2 style="font-family:var(--font-display);font-size:28px;margin-bottom:6px;">' + artwork.title + '</h2>'
-    + '<p style="font-size:13px;color:var(--cream-dim);margin-bottom:28px;">' + size.label + ' · ' + size.price + ' · Limited Edition of 25</p>'
-    + '<div style="display:flex;flex-direction:column;gap:14px;">'
-    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">'
-    + '<div class="form-group"><label>Full Name *</label><input id="sf-name" type="text" placeholder="Your full name"></div>'
-    + '<div class="form-group"><label>Email Address *</label><input id="sf-email" type="email" placeholder="you@email.com"></div>'
+    + '<button id="sfCloseBtn" style="position:absolute;top:14px;right:16px;background:none;border:none;color:var(--cream-dim);font-size:22px;cursor:pointer;line-height:1;">✕</button>'
+    + '<p style="font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;padding-right:32px;">Shipping Details</p>'
+    + '<h2 style="font-family:var(--font-display);font-size:26px;margin-bottom:6px;padding-right:32px;">' + artwork.title + '</h2>'
+    + '<p style="font-size:13px;color:var(--cream-dim);margin-bottom:24px;line-height:1.6;">' + size.label + ' · ' + size.price + ' · Limited Edition of 25</p>'
+
+    + '<div style="display:flex;flex-direction:column;gap:14px;width:100%;">'
+
+    + '<div class="form-group">'
+    + '<label>Full Name *</label>'
+    + '<input id="sf-name" type="text" placeholder="Your full name" style="width:100%;box-sizing:border-box;">'
     + '</div>'
-    + '<div class="form-group"><label>Phone Number * <span style="font-size:11px;color:var(--muted)">(include country code, e.g. +1 555 000 0000)</span></label><input id="sf-phone" type="tel" placeholder="+1 555 000 0000"></div>'
-    + '<div class="form-group"><label>Street Address *</label><input id="sf-street" type="text" placeholder="House number, street name"></div>'
-    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">'
-    + '<div class="form-group"><label>City *</label><input id="sf-city" type="text" placeholder="City"></div>'
-    + '<div class="form-group"><label>State / Province *</label><input id="sf-state" type="text" placeholder="State or province"></div>'
+
+    + '<div class="form-group">'
+    + '<label>Email Address *</label>'
+    + '<input id="sf-email" type="email" placeholder="you@email.com" style="width:100%;box-sizing:border-box;">'
     + '</div>'
-    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">'
-    + '<div class="form-group"><label>Postal / ZIP Code *</label><input id="sf-postal" type="text" placeholder="Postal code"></div>'
-    + '<div class="form-group"><label>Country *</label><input id="sf-country" type="text" placeholder="Country"></div>'
+
+    + '<div class="form-group">'
+    + '<label>Phone Number * <span style="font-size:11px;color:var(--muted);letter-spacing:0;text-transform:none;">include country code</span></label>'
+    + '<input id="sf-phone" type="tel" placeholder="+1 555 000 0000" style="width:100%;box-sizing:border-box;">'
     + '</div>'
+
+    + '<div class="form-group">'
+    + '<label>Street Address *</label>'
+    + '<input id="sf-street" type="text" placeholder="House number, street name" style="width:100%;box-sizing:border-box;">'
     + '</div>'
-    + '<button id="proceedPaymentBtn" class="btn-primary" style="width:100%;text-align:center;margin-top:24px;display:block;">Proceed to Payment → ' + size.price + '</button>'
+
+    + '<div class="form-group">'
+    + '<label>City *</label>'
+    + '<input id="sf-city" type="text" placeholder="City" style="width:100%;box-sizing:border-box;">'
+    + '</div>'
+
+    + '<div class="form-group">'
+    + '<label>State / Province *</label>'
+    + '<input id="sf-state" type="text" placeholder="State or province" style="width:100%;box-sizing:border-box;">'
+    + '</div>'
+
+    + '<div class="form-group">'
+    + '<label>Postal / ZIP Code *</label>'
+    + '<input id="sf-postal" type="text" placeholder="Postal code" style="width:100%;box-sizing:border-box;">'
+    + '</div>'
+
+    + '<div class="form-group">'
+    + '<label>Country *</label>'
+    + '<input id="sf-country" type="text" placeholder="Country" style="width:100%;box-sizing:border-box;">'
+    + '</div>'
+
+    + '</div>'
+
+    + '<button id="proceedPaymentBtn" class="btn-primary" style="width:100%;text-align:center;margin-top:24px;display:block;box-sizing:border-box;">Proceed to Payment → ' + size.price + '</button>'
     + '<p style="font-size:11.5px;color:var(--muted);margin-top:14px;line-height:1.7;text-align:center;">Your address is used only to ship your print. Free worldwide shipping included.</p>';
 
   overlay.appendChild(box);
   document.body.appendChild(overlay);
 
-  // All click handlers attached in JS — zero inline onclick, zero quote conflicts
-  document.getElementById('sfCloseBtn').addEventListener('click', function(){
+  document.getElementById('sfCloseBtn').addEventListener('click', function () {
     document.getElementById('shippingFormOverlay').remove();
   });
 
