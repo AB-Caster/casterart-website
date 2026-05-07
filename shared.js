@@ -564,13 +564,6 @@ function proceedToPayment() {
     return;
   }
 
-  // If Flutterwave already loaded, launch immediately
-  if (window.flwReady && typeof FlutterwaveCheckout !== 'undefined') {
-    document.getElementById('shippingFormOverlay') && document.getElementById('shippingFormOverlay').remove();
-    launchFlutterwave(publicKey, size, artworkId, w, fields);
-    return;
-  }
-
 if (typeof FlutterwaveCheckout !== 'function') {
   showToast('Payment gateway did not load. Please refresh and try again.');
   console.error('FlutterwaveCheckout is missing. Check that checkout.flutterwave.com/v3.js loaded.');
