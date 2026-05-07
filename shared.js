@@ -2,6 +2,17 @@
    ABRAHAM CASTER - Shared Site Logic
    =========================================== */
 
+
+// Load Flutterwave checkout
+(function(){
+  const s = document.createElement('script');
+  s.src = 'https://checkout.flutterwave.com/v3.js';
+  s.async = true;
+  document.head.appendChild(s);
+})();
+
+window.FLW_PUBLIC_KEY = 'FLWPUBK_TEST-d703adb5c6c5851fc84f59fd38748c0b-X';
+
 // Edit most website content here: artworks, series, print prices, payment links, navigation, footer, and popup copy.
 // Keep API keys out of this file. Backend keys belong in Netlify environment variables only.
 
@@ -191,9 +202,27 @@ This artwork invites you to reflect on how your feelings influence your view of 
 ];
 
 const PRINT_SIZES = [
-  { label: 'A4 (8" x 12")', price: '$80', usd: 80, stock: 25, lemonLink: 'YOUR_LEMON_SQUEEZY_A4_LINK' },
-  { label: 'A3 (12" x 16")', price: '$130', usd: 130, stock: 25, lemonLink: 'YOUR_LEMON_SQUEEZY_A3_LINK' },
-  { label: 'A2 (16" x 20")', price: '$220', usd: 220, stock: 25, lemonLink: 'YOUR_LEMON_SQUEEZY_A2_LINK' }
+  {
+    label: 'A4 · 8" × 12"',
+    price: '$80',
+    amount: 80,
+    currency: 'USD',
+    flwPlan: 'A4'
+  },
+  {
+    label: 'A3 · 12" × 16"',
+    price: '$130',
+    amount: 130,
+    currency: 'USD',
+    flwPlan: 'A3'
+  },
+  {
+    label: 'A2 · 16" × 20"',
+    price: '$220',
+    amount: 220,
+    currency: 'USD',
+    flwPlan: 'A2'
+  }
 ];
 
 const NAV_HTML = `
@@ -434,7 +463,187 @@ Thank you.`);
 }
 function printCardHTML(w){ const safe=w.id.replace(/[^a-z0-9]/g,''); return `<div class="print-card fade-in" id="${w.id}"><div class="print-card-img">${imgTag(w.image,w.fallbackImage,w.title + ' print')}</div><div class="print-card-body"><h3 class="print-card-title">${w.title}</h3><p class="print-card-edition">Limited Edition · 25 prints per size · Hand-signed</p><p class="print-card-summary">${w.statement.split('\n')[0].slice(0,170)}...</p><div class="size-selector" id="sizes-${safe}">${PRINT_SIZES.map((s,i)=>`<label class="size-option${i===0?' selected':''}" for="s${safe}${i}" onclick="selectSize(this)"><input type="radio" name="size-${safe}" id="s${safe}${i}" value="${i}"${i===0?' checked':''}><span class="size-option-label">${s.label}</span><span class="size-option-price">${s.price}</span></label>`).join('')}</div><div class="payment-options"><button class="btn-checkout" onclick="buyPrint('${w.id}','${safe}')">Claim This Print</button></a></div></div></div>`; }
 function selectSize(label){ const container=label.closest('.size-selector'); container.querySelectorAll('.size-option').forEach(l=>l.classList.remove('selected')); label.classList.add('selected'); }
-function buyPrint(artworkId, safeId){ const selected=document.querySelector(`#sizes-${safeId} .size-option.selected`); if(!selected){showToast('Please select a size.');return;} const size=PRINT_SIZES[parseInt(selected.querySelector('input').value,10)]; const w=getArtwork(artworkId); if(!size.lemonLink || size.lemonLink.startsWith('YOUR_')){ const subject=encodeURIComponent(`Print Purchase: ${w.title} - ${size.label}`); const body=encodeURIComponent(`Hello,\n\nI would like to purchase this print.\n\nArtwork: ${w.title}\nSize: ${size.label}\nPrice: ${size.price}\n\nPlease send payment instructions.\n\nThank you.`); window.location.href=`mailto:${SITE_EMAIL}?subject=${subject}&body=${body}`; return;} window.open(size.lemonLink + `?checkout[custom][artwork_id]=${encodeURIComponent(artworkId)}&checkout[custom][print_size]=${encodeURIComponent(size.label)}`,'_blank','noopener'); }
+function buyPrint(artworkId, safeId) {
+  const selected = document.querySelector(`#sizes-${safeId} .size-option.selected`);
+  if (!selected) { showToast('Please select a size.'); return; }
+
+  const sizeIndex = parseInt(selected.querySelector('input').value, 10);
+  const size = PRINT_SIZES[sizeIndex];
+  const w = getArtwork(artworkId);
+  if (!w) return;
+
+  // Show shipping form before opening Flutterwave
+  openShippingForm(artworkId, size, w);
+}
+
+function openShippingForm(artworkId, size, artwork) {
+  // Remove any existing form
+  const existing = document.getElementById('shippingFormOverlay');
+  if (existing) existing.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'shippingFormOverlay';
+  overlay.style.cssText = `
+    position:fixed;inset:0;background:rgba(8,7,6,.88);z-index:9000;
+    display:flex;align-items:center;justify-content:center;padding:24px;
+    overflow-y:auto;
+  `;
+
+  overlay.innerHTML = `
+    <div style="
+      background:var(--surface);border:1px solid var(--border);
+      padding:42px;max-width:560px;width:100%;position:relative;
+    ">
+      <button onclick="document.getElementById('shippingFormOverlay').remove()" style="
+        position:absolute;top:18px;right:22px;background:none;border:none;
+        color:var(--cream-dim);font-size:22px;cursor:pointer;line-height:1;
+      ">✕</button>
+
+      <p style="font-size:10px;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);margin-bottom:8px;">
+        Shipping Details
+      </p>
+      <h2 style="font-family:var(--font-display);font-size:28px;margin-bottom:6px;">
+        ${artwork.title}
+      </h2>
+      <p style="font-size:13px;color:var(--cream-dim);margin-bottom:28px;">
+        ${size.label} · ${size.price} · Limited Edition of 25
+      </p>
+
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group">
+            <label for="sf-name">Full Name *</label>
+            <input id="sf-name" type="text" placeholder="Your full name" required>
+          </div>
+          <div class="form-group">
+            <label for="sf-email">Email Address *</label>
+            <input id="sf-email" type="email" placeholder="you@email.com" required>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="sf-phone">Phone Number * <span style="font-size:11px;color:var(--muted)">(include country code, e.g. +1 555 000 0000)</span></label>
+          <input id="sf-phone" type="tel" placeholder="+1 555 000 0000" required>
+        </div>
+        <div class="form-group">
+          <label for="sf-street">Street Address *</label>
+          <input id="sf-street" type="text" placeholder="House number, street name" required>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group">
+            <label for="sf-city">City *</label>
+            <input id="sf-city" type="text" placeholder="City" required>
+          </div>
+          <div class="form-group">
+            <label for="sf-state">State / Province *</label>
+            <input id="sf-state" type="text" placeholder="State or province" required>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-group">
+            <label for="sf-postal">Postal / ZIP Code *</label>
+            <input id="sf-postal" type="text" placeholder="Postal code" required>
+          </div>
+          <div class="form-group">
+            <label for="sf-country">Country *</label>
+            <input id="sf-country" type="text" placeholder="Country" required>
+          </div>
+        </div>
+      </div>
+
+      <button onclick="proceedToPayment('${artworkId}', ${JSON.stringify(size).replace(/'/g,"\\'")})" 
+        class="btn-primary" style="width:100%;text-align:center;margin-top:24px;display:block;">
+        Proceed to Payment → ${size.price}
+      </button>
+
+      <p style="font-size:11.5px;color:var(--muted);margin-top:14px;line-height:1.7;text-align:center;">
+        Your address is used only to ship your print. Free worldwide shipping included.
+      </p>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+}
+
+function proceedToPayment(artworkId, size) {
+  // Validate all fields
+  const fields = {
+    name: document.getElementById('sf-name')?.value.trim(),
+    email: document.getElementById('sf-email')?.value.trim(),
+    phone: document.getElementById('sf-phone')?.value.trim(),
+    street: document.getElementById('sf-street')?.value.trim(),
+    city: document.getElementById('sf-city')?.value.trim(),
+    state: document.getElementById('sf-state')?.value.trim(),
+    postal: document.getElementById('sf-postal')?.value.trim(),
+    country: document.getElementById('sf-country')?.value.trim(),
+  };
+
+  const missing = Object.entries(fields)
+    .filter(([k, v]) => !v)
+    .map(([k]) => k);
+
+  if (missing.length) {
+    showToast('Please fill in all required shipping fields.');
+    return;
+  }
+
+  if (!fields.email.includes('@')) {
+    showToast('Please enter a valid email address.');
+    return;
+  }
+
+  const w = getArtwork(artworkId);
+  if (!w) return;
+
+  const publicKey = window.FLW_PUBLIC_KEY;
+  if (!publicKey) {
+    showToast('Payment is not configured yet. Please contact us directly.');
+    return;
+  }
+
+  // Close shipping form
+  document.getElementById('shippingFormOverlay')?.remove();
+
+  FlutterwaveCheckout({
+    public_key: publicKey,
+    tx_ref: `print-${artworkId}-${size.flwPlan}-${Date.now()}`,
+    amount: size.amount,
+    currency: size.currency,
+    payment_options: 'card, banktransfer, ussd',
+    meta: {
+      order_type: 'print',
+      artwork_id: artworkId,
+      artwork_title: w.title,
+      print_size: size.label,
+      print_size_code: size.flwPlan,
+      shipping_name: fields.name,
+      shipping_email: fields.email,
+      shipping_phone: fields.phone,
+      shipping_street: fields.street,
+      shipping_city: fields.city,
+      shipping_state: fields.state,
+      shipping_postal: fields.postal,
+      shipping_country: fields.country
+    },
+    customer: {
+      email: fields.email,
+      name: fields.name,
+      phonenumber: fields.phone
+    },
+    customizations: {
+      title: 'Caster Art — Limited Print',
+      description: `${w.title} · ${size.label} · Edition of 25`,
+      logo: 'https://casterart.com/assets/images/logo.png'
+    },
+    callback: function(response) {
+      if (response.status === 'successful' || response.status === 'completed') {
+        showToast('Payment confirmed. Your print is on its way to being made.', true);
+      } else {
+        showToast('Payment was not completed. Please try again.');
+      }
+    },
+    onclose: function() {}
+  });
+}
 function openModal(id){ const w=getArtwork(id); if(!w) return; const img=document.getElementById('modalImg'); img.src=localImage(w.image); img.dataset.fallback=w.fallbackImage || w.image; document.getElementById('modalEyebrow').textContent=(w.series ? getSeriesLabel(w.series) + ' · ' : '') + `${w.medium} · ${w.year}`; document.getElementById('modalTitle').textContent=w.title; document.getElementById('modalMeta').textContent=`${w.medium} on Paper · ${w.year}${w.series ? ' · ' + getSeriesLabel(w.series) : ''}`; document.getElementById('modalStatement').textContent=w.statement; const cta=document.getElementById('modalCta'); const pcta=document.getElementById('modalPrintCta'); if(!w.available || w.printOnly){ cta.textContent='Original Sold'; cta.href='#'; cta.onclick=e=>e.preventDefault(); } else { const subject=encodeURIComponent(`Original Inquiry: ${w.title}`); const body=encodeURIComponent(`Hello,\n\nI am interested in the original "${w.title}" (${w.medium}, ${w.year}).\n\nPlease share pricing and availability.\n\nThank you.`); cta.textContent='Inquire About Original'; cta.href=`mailto:${SITE_EMAIL}?subject=${subject}&body=${body}`; cta.onclick=null; } pcta.href=pageHref(`prints.html#${w.id}`); pcta.textContent='Order Print'; document.getElementById('modalOverlay').classList.add('active'); document.body.style.overflow='hidden'; applyImageFallbacks(); }
 function closeModal(){ const overlay=document.getElementById('modalOverlay'); if(overlay){overlay.classList.remove('active');document.body.style.overflow='';} }
 function handleModalBgClose(e){ if(e.target===document.getElementById('modalOverlay')) closeModal(); }
