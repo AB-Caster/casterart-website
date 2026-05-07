@@ -41,9 +41,9 @@ exports.handler = async function (event) {
         phonenumber: customerPhone || ''
       },
       customizations: {
-        title: 'Abraham Caster Art Print',
+        title: 'Caster Art',
         description: `${artworkTitle} — ${sizeLabel}`,
-        logo: 'https://casterart.com/assets/images/logo.png'
+        logo: 'https://casterart.com/assets/images/flutterwave-logo.png'
       },
       meta: {
         artworkId,
