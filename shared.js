@@ -2,15 +2,6 @@
    ABRAHAM CASTER - Shared Site Logic
    =========================================== */
 
-// Load Flutterwave checkout script — tracked so we know when it's ready
-window.flwReady = false;
-(function(){
-  const s = document.createElement('script');
-  s.src = 'https://checkout.flutterwave.com/v3.js';
-  s.onload = function(){ window.flwReady = true; };
-  s.onerror = function(){ console.error('Flutterwave failed to load.'); };
-  document.head.appendChild(s);
-})();
 
 window.FLW_PUBLIC_KEY = 'FLWPUBK_TEST-d703adb5c6c5851fc84f59fd38748c0b-X';
 
@@ -580,24 +571,16 @@ function proceedToPayment() {
     return;
   }
 
-  // Still loading — wait up to 8 seconds then launch
-  const btn = document.getElementById('proceedPaymentBtn');
-  if (btn) { btn.textContent = 'Opening payment...'; btn.disabled = true; }
+if (typeof FlutterwaveCheckout !== 'function') {
+  showToast('Payment gateway did not load. Please refresh and try again.');
+  console.error('FlutterwaveCheckout is missing. Check that checkout.flutterwave.com/v3.js loaded.');
+  return;
+}
 
-  var waited = 0;
-  var interval = setInterval(function() {
-    waited += 200;
-    if (window.flwReady && typeof FlutterwaveCheckout !== 'undefined') {
-      clearInterval(interval);
-      var overlay = document.getElementById('shippingFormOverlay');
-      if (overlay) overlay.remove();
-      launchFlutterwave(publicKey, size, artworkId, w, fields);
-    } else if (waited >= 8000) {
-      clearInterval(interval);
-      if (btn) { btn.textContent = 'Proceed to Payment \u2192 ' + size.price; btn.disabled = false; }
-      showToast('Connection is slow. Please check your internet and try again.');
-    }
-  }, 200);
+var overlay = document.getElementById('shippingFormOverlay');
+if (overlay) overlay.remove();
+
+launchFlutterwave(publicKey, size, artworkId, w, fields);
 }
 
 function launchFlutterwave(publicKey, size, artworkId, w, fields) {
