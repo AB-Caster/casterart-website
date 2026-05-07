@@ -3,11 +3,13 @@
    =========================================== */
 
 
-// Load Flutterwave checkout
+// Load Flutterwave checkout and signal when ready
+window.flwReady = false;
 (function(){
   const s = document.createElement('script');
   s.src = 'https://checkout.flutterwave.com/v3.js';
-  s.async = true;
+  s.onload = function(){ window.flwReady = true; };
+  s.onerror = function(){ console.error('Flutterwave script failed to load.'); };
   document.head.appendChild(s);
 })();
 
@@ -607,19 +609,87 @@ function proceedToPayment() {
   const w = getArtwork(artworkId);
   if (!w) return;
 
-  // Check Flutterwave script is loaded
-  if (typeof FlutterwaveCheckout === 'undefined') {
-    showToast('Payment is loading. Please try again in a moment.');
-    return;
-  }
-
   const publicKey = window.FLW_PUBLIC_KEY;
   if (!publicKey) {
     showToast('Payment is not configured yet. Please contact us directly.');
     return;
   }
 
+  // If Flutterwave is already loaded, go immediately
+  if (window.flwReady && typeof FlutterwaveCheckout !== 'undefined') {
+    launchFlutterwave(publicKey, size, artworkId, w, fields);
+    return;
+  }
+
+  // Not loaded yet — show a brief spinner and wait up to 8 seconds
+  const btn = document.getElementById('proceedPaymentBtn');
+  if (btn) {
+    btn.textContent = 'Opening payment...';
+    btn.disabled = true;
+  }
+
+  let waited = 0;
+  const interval = setInterval(function() {
+    waited += 200;
+    if (window.flwReady && typeof FlutterwaveCheckout !== 'undefined') {
+      clearInterval(interval);
+      document.getElementById('shippingFormOverlay')?.remove();
+      launchFlutterwave(publicKey, size, artworkId, w, fields);
+    } else if (waited >= 8000) {
+      clearInterval(interval);
+      if (btn) {
+        btn.textContent = `Proceed to Payment → ${size.price}`;
+        btn.disabled = false;
+      }
+      showToast('Connection is slow. Please check your internet and try again.');
+    }
+  }, 200);
+}
+
+function launchFlutterwave(publicKey, size, artworkId, w, fields) {
   document.getElementById('shippingFormOverlay')?.remove();
+
+  FlutterwaveCheckout({
+    public_key: publicKey,
+    tx_ref: `print-${artworkId}-${size.flwPlan}-${Date.now()}`,
+    amount: size.amount,
+    currency: size.currency,
+    payment_options: 'card, banktransfer, ussd',
+    meta: {
+      order_type: 'print',
+      artwork_id: artworkId,
+      artwork_title: w.title,
+      print_size: size.label,
+      print_size_code: size.flwPlan,
+      shipping_name: fields.name,
+      shipping_email: fields.email,
+      shipping_phone: fields.phone,
+      shipping_street: fields.street,
+      shipping_city: fields.city,
+      shipping_state: fields.state,
+      shipping_postal: fields.postal,
+      shipping_country: fields.country
+    },
+    customer: {
+      email: fields.email,
+      name: fields.name,
+      phonenumber: fields.phone
+    },
+    customizations: {
+      title: 'Caster Art — Limited Print',
+      description: `${w.title} · ${size.label} · Edition of 25`,
+      logo: 'https://casterart.com/assets/images/logo.png'
+    },
+    callback: function(response) {
+      if (response.status === 'successful' || response.status === 'completed') {
+        showToast('Payment confirmed. Your print is on its way to being made.', true);
+      } else {
+        showToast('Payment was not completed. Please try again.');
+      }
+    },
+    onclose: function() {}
+  });
+}
 
   FlutterwaveCheckout({
     public_key: publicKey,
