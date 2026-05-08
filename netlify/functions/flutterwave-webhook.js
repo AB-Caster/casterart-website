@@ -23,11 +23,36 @@ exports.handler = async (event) => {
     return json(400, { error: 'Invalid JSON' });
   }
 
-  const eventType = payload.event;
-  const data = payload.data;
+  const eventType = payload.event || 'unknown';
+  const data = payload.data || {};
 
-  if (eventType !== 'charge.completed' || data?.status !== 'successful') {
-    return json(200, { received: true, processed: false });
+  console.log('Flutterwave webhook received:', JSON.stringify({
+    eventType,
+    status: data.status,
+    tx_ref: data.tx_ref,
+    id: data.id
+  }));
+
+  if (data?.status !== 'successful') {
+    console.log('Webhook skipped because status is not successful:', data?.status);
+    return json(200, {
+      received: true,
+      processed: false,
+      reason: 'status_not_successful',
+      eventType,
+      status: data?.status
+    });
+  }
+
+  if (!data?.tx_ref || !String(data.tx_ref).startsWith('caster-')) {
+    console.log('Webhook skipped because tx_ref is not a Caster Art order:', data?.tx_ref);
+    return json(200, {
+      received: true,
+      processed: false,
+      reason: 'not_caster_order',
+      eventType,
+      tx_ref: data?.tx_ref
+    });
   }
 
   const verified = await verifyFlutterwaveTransaction(data.id);
