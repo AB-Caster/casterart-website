@@ -23,17 +23,23 @@ exports.handler = async (event) => {
     return json(400, { error: 'Invalid JSON' });
   }
 
-  const eventType = payload.event || 'unknown';
-  const data = payload.data || {};
+   const eventType = payload.event || payload.type || payload['event.type'] || 'unknown';
+
+  // Flutterwave may send transaction data inside payload.data,
+  // or directly at the top level depending on the webhook format.
+  const data = payload.data || payload;
 
   console.log('Flutterwave webhook received:', JSON.stringify({
     eventType,
+    payloadKeys: Object.keys(payload),
+    dataKeys: Object.keys(data || {}),
     status: data.status,
     tx_ref: data.tx_ref,
-    id: data.id
+    id: data.id,
+    transaction_id: data.transaction_id
   }));
 
-  if (data?.status !== 'successful') {
+  if (data?.status !== 'successful' && data?.status !== 'completed') {
     console.log('Webhook skipped because status is not successful:', data?.status);
     return json(200, {
       received: true,
@@ -55,7 +61,18 @@ exports.handler = async (event) => {
     });
   }
 
-  const verified = await verifyFlutterwaveTransaction(data.id);
+  const transactionId = data.id || data.transaction_id;
+
+  if (!transactionId) {
+    console.error('No transaction ID found in Flutterwave webhook:', JSON.stringify(payload));
+    return json(200, {
+      received: true,
+      processed: false,
+      reason: 'missing_transaction_id'
+    });
+  }
+
+  const verified = await verifyFlutterwaveTransaction(transactionId);
 
   if (!verified.ok) {
     console.error('Flutterwave verification failed:', verified);
