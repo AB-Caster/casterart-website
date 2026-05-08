@@ -50,16 +50,18 @@ exports.handler = async (event) => {
     });
   }
 
-  if (!data?.tx_ref || !String(data.tx_ref).startsWith('caster-')) {
-    console.log('Webhook skipped because tx_ref is not a Caster Art order:', data?.tx_ref);
-    return json(200, {
-      received: true,
-      processed: false,
-      reason: 'not_caster_order',
-      eventType,
-      tx_ref: data?.tx_ref
-    });
-  }
+ const webhookTxRef = data.tx_ref || data.txRef;
+
+if (!webhookTxRef || !String(webhookTxRef).startsWith('caster-')) {
+  console.log('Webhook skipped because tx_ref/txRef is not a Caster Art order:', webhookTxRef);
+  return json(200, {
+    received: true,
+    processed: false,
+    reason: 'not_caster_order',
+    eventType,
+    tx_ref: webhookTxRef
+  });
+}
 
   const transactionId = data.id || data.transaction_id;
 
@@ -85,11 +87,11 @@ exports.handler = async (event) => {
 
   const tx = verified.transaction;
 
-  if (String(tx.tx_ref) !== String(data.tx_ref)) {
-    console.error('Transaction reference mismatch:', {
-      webhook: data.tx_ref,
-      verified: tx.tx_ref
-    });
+  if (String(tx.tx_ref) !== String(webhookTxRef)) {
+  console.error('Transaction reference mismatch:', {
+    webhook: webhookTxRef,
+    verified: tx.tx_ref
+  });
 
     return json(200, {
       received: true,
