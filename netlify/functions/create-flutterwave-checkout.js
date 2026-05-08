@@ -1,9 +1,6 @@
 exports.handler = async function (event) {
   if (event.httpMethod !== 'POST') {
-    return {
-      statusCode: 405,
-      body: JSON.stringify({ error: 'Method not allowed' })
-    };
+    return json(405, { error: 'Method not allowed' });
   }
 
   try {
@@ -13,22 +10,20 @@ exports.handler = async function (event) {
       artworkId,
       artworkTitle,
       sizeLabel,
+      sizeCode,
       amount,
       currency = 'USD',
       customerName,
       customerEmail,
       customerPhone,
-      shippingAddress
+      shippingAddress = {}
     } = order;
 
     if (!artworkId || !artworkTitle || !sizeLabel || !amount || !customerEmail || !customerName) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ error: 'Missing required order details.' })
-      };
+      return json(400, { error: 'Missing required order details.' });
     }
 
-    const txRef = `caster-${artworkId}-${Date.now()}`;
+    const txRef = `caster-${artworkId}-${sizeCode || 'print'}-${Date.now()}`;
 
     const payload = {
       tx_ref: txRef,
@@ -46,10 +41,24 @@ exports.handler = async function (event) {
         logo: 'https://casterart.com/assets/images/flutterwave-logo.png'
       },
       meta: {
-        artworkId,
-        artworkTitle,
-        sizeLabel,
-        shippingAddress: shippingAddress || ''
+        order_type: 'print',
+        artwork_id: artworkId,
+        artwork_sku: artworkId,
+        artwork_title: artworkTitle,
+
+        print_size: sizeLabel,
+        print_size_code: sizeCode || '',
+
+        edition_number: 'pending',
+
+        shipping_name: customerName,
+        shipping_email: customerEmail,
+        shipping_phone: customerPhone || '',
+        shipping_street: shippingAddress.street || '',
+        shipping_city: shippingAddress.city || '',
+        shipping_state: shippingAddress.state || '',
+        shipping_postal: shippingAddress.postal || '',
+        shipping_country: shippingAddress.country || ''
       }
     };
 
@@ -66,25 +75,24 @@ exports.handler = async function (event) {
 
     if (!flwResponse.ok || !data?.data?.link) {
       console.error('Flutterwave error:', data);
-      return {
-        statusCode: 502,
-        body: JSON.stringify({
-          error: 'Flutterwave could not create checkout link.',
-          details: data
-        })
-      };
+      return json(502, {
+        error: 'Flutterwave could not create checkout link.',
+        details: data
+      });
     }
 
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ link: data.data.link, tx_ref: txRef })
-    };
+    return json(200, { link: data.data.link, tx_ref: txRef });
+
   } catch (error) {
     console.error('Checkout function error:', error);
-
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: 'Server error while creating checkout.' })
-    };
+    return json(500, { error: 'Server error while creating checkout.' });
   }
 };
+
+function json(statusCode, body) {
+  return {
+    statusCode,
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(body)
+  };
+}
