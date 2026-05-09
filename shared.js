@@ -44,6 +44,7 @@ const ARTWORKS = [
     fallbackImage: 'assets/images/grey.jpg',
     available: true,
     featured: true,
+    printStatus: 'available',
     statement: `"Grey" explores the complexities of human nature and perception. Some see the world in black and white, while others recognise the shades of grey in between. This piece is not about denying the clear lines between right and wrong or good and evil. It is a reflection on how, with humans, things are rarely as straightforward as they seem.
 
 It challenges the narrow lens through which we often view the world and judge others. "Grey" invites you to reflect on your own judgments and consider the perspectives of others. By understanding the views of those around us, we can gain a broader, more compassionate perception of life.`
@@ -58,6 +59,7 @@ It challenges the narrow lens through which we often view the world and judge ot
     fallbackImage: 'assets/images/serenity.jpg',
     available: true,
     featured: false,
+    printStatus: 'available',
     statement: `"Serenity" is like my creative escape hatch. When anxiety kicks in, I dive into the world of art, blast my favourite tunes, or get lost in timeless films. Each stroke, each note, each frame becomes a soothing balm, a gentle antidote to the chaos within.
 
 Every stroke is a little victory, a step closer to that calm state. It is like my personal therapy session without the couch. This piece is a quiet thank you to art, music, and film, the things that have helped me find stillness when my mind would not.`
@@ -72,6 +74,8 @@ Every stroke is a little victory, a step closer to that calm state. It is like m
     fallbackImage: 'assets/images/the-broken.jpg',
     available: true,
     featured: true,
+    printStatus: 'waitlist',
+    waitlistSource: 'waitlist_broken',
     statement: `Is it possible to traverse the human experience without encountering the inevitable cracks that shape our character? Broken or unbroken, our spirits are mirrors reflecting the brilliance within.
 
 The shattered glass is a metaphor for our imperfections, but also for the beauty of the inner light that still finds a way through. The cracks are not only damage. They are evidence that something survived.`
@@ -87,6 +91,7 @@ The shattered glass is a metaphor for our imperfections, but also for the beauty
     available: false,
     featured: true,
     printOnly: true,
+    printStatus: 'available',
     statement: `"Ayaba" means queen in my tribe, the Yoruba tribe. It is a powerful symbol of resilience and strength. In this hyperrealistic charcoal drawing, a crowned queen stands tall amidst a sea of oppressive hands. A single, defiant hand reaches out to lift her chin, a testament to the indomitable spirit that lies within.
 
 Ayaba is a reminder that even in the face of adversity, we can rise above and reclaim our power. This artwork is a tribute to the strength and resilience of women, especially those who face societal challenges.`
@@ -101,6 +106,8 @@ Ayaba is a reminder that even in the face of adversity, we can rise above and re
     fallbackImage: 'assets/images/shades-of-brown-1.jpg',
     available: true,
     featured: false,
+    printStatus: 'waitlist',
+    waitlistSource: 'waitlist_shades',
     statement: `My aim is to use our skin colour as a metaphor for our human differences and cultural diversity. Despite these differences, we are more alike than we think. We all share simple joys, like the satisfaction of kicking pebbles while walking, and universal experiences, like the natural fear boys have of their mothers, no matter how old or big they get. We all crave love and fear the unknown.
 
 This piece encourages reflection on how we treat people we perceive as different. It reminds us that our common experiences bind us together and that the divisions between us are often of our own making. Ultimately, it is a call to recognise our shared humanity and to see beyond superficial differences.`
@@ -115,6 +122,8 @@ This piece encourages reflection on how we treat people we perceive as different
     fallbackImage: 'assets/images/shades-of-brown-2.jpg',
     available: true,
     featured: false,
+    printStatus: 'waitlist',
+    waitlistSource: 'waitlist_shades',
     statement: `My aim is to use our skin colour as a metaphor for our human differences and cultural diversity. Despite these differences, we are more alike than we think. We all share simple joys, like the satisfaction of kicking pebbles while walking, and universal experiences, like the natural fear boys have of their mothers, no matter how old or big they get. We all crave love and fear the unknown.
 
 This second work continues the same question from another face and another presence. It asks us to notice how quickly we make distance between ourselves and others, then reminds us that the distance is often something we were taught, not something that has to remain.`
@@ -129,6 +138,8 @@ This second work continues the same question from another face and another prese
     fallbackImage: 'assets/images/view.jpg',
     available: true,
     featured: true,
+    printStatus: 'waitlist',
+    waitlistSource: 'waitlist_perception',
     statement: `During the early years of my life, the way I viewed and saw the world was largely dependent on the beliefs and values that were passed down to me. As I grew older, the things I saw and experienced began to reshape some of these beliefs. As I grew, my questions grew too. Some still remain unanswered.
 
 Each stroke of charcoal and graphite on paper reflects my evolving journey, capturing the essence of my changing perception of the world. "View" is not just a piece of art. It is a visual narrative of my quest for understanding and the continuous transformation of my worldview.`
@@ -143,6 +154,8 @@ Each stroke of charcoal and graphite on paper reflects my evolving journey, capt
     fallbackImage: 'assets/images/sound.jpg',
     available: true,
     featured: false,
+    printStatus: 'waitlist',
+    waitlistSource: 'waitlist_perception',
     statement: `I have always been the quiet one, more of a listener than a talker. This has largely shaped my perception of the world and how I connect with people. By listening, I have learned to pick up on the little things: tones, pauses, and unspoken words.
 
 My artwork "Sound" is an expression in charcoal and graphite of this deep understanding that comes from truly listening, like translating the subtlety of human interaction onto paper. "Sound" is not just a piece of art to me. It is a totem to the power of listening and the rich insights it brings.`
@@ -157,6 +170,8 @@ My artwork "Sound" is an expression in charcoal and graphite of this deep unders
     fallbackImage: 'assets/images/taste.jpg',
     available: true,
     featured: false,
+    printStatus: 'waitlist',
+    waitlistSource: 'waitlist_perception',
     statement: `I have always been drawn to simplicity and finding joy beyond material possessions. My artwork "Taste" reflects this mindset. It is about perceiving life through the lens of value and impact rather than focusing on appearances. By concentrating on what truly matters and how things can change lives, I have come to appreciate the deeper essence of experiences and connections.
 
 "Taste" celebrates finding beauty and worth in the intangible. Through this piece, I aim to share a perspective that values substance over superficiality, hoping to inspire a different kind of appreciation for the world around us.`
@@ -171,6 +186,8 @@ My artwork "Sound" is an expression in charcoal and graphite of this deep unders
     fallbackImage: 'assets/images/scent.jpg',
     available: true,
     featured: false,
+    printStatus: 'waitlist',
+    waitlistSource: 'waitlist_perception',
     statement: `"Scent" explores how our sense of smell shapes our perception of the world. Smells can trigger strong emotions and vivid memories, instantly transporting us back to past experiences. This connection between scent and memory is powerful and deeply personal.
 
 Through "Scent," I invite you to reflect on how smells enrich our lives and shape our feelings. From the comforting aroma of home to the fresh scent of nature, these olfactory experiences connect us to moments and emotions in unique ways. This artwork is a reminder of the subtle yet profound impact that our sense of smell has on our understanding of the world around us.`
@@ -185,6 +202,8 @@ Through "Scent," I invite you to reflect on how smells enrich our lives and shap
     fallbackImage: 'assets/images/feel.jpg',
     available: true,
     featured: false,
+    printStatus: 'waitlist',
+    waitlistSource: 'waitlist_perception',
     statement: `"Feel" explores the profound impact our emotions have on how we see the world. Emotions colour our experiences, shaping our perceptions and memories. When we are happy, everything seems brighter and more hopeful. When we are sad, the same world can feel heavy and grey.
 
 This artwork invites you to reflect on how your feelings influence your view of life. It is a reminder that our emotions are powerful lenses through which we interpret our surroundings and experiences. Embrace your feelings, understand their influence, and let them guide you to a deeper, more empathetic understanding of the world around you.`
@@ -409,6 +428,32 @@ function renderSeriesPage(seriesId){
   }
 }
 
+
+function getPrintStatus(w){ return w && w.printStatus ? w.printStatus : 'available'; }
+function isPrintWaitlist(w){ return getPrintStatus(w) === 'waitlist'; }
+function getWaitlistSource(w){
+  if(!w) return 'waitlist_print';
+  if(w.waitlistSource) return w.waitlistSource;
+  if(w.id === 'broken') return 'waitlist_broken';
+  if(w.series === 'shades-of-brown') return 'waitlist_shades';
+  if(w.series === 'perception') return 'waitlist_perception';
+  return 'waitlist_print';
+}
+function getSelectedPrintSize(safeId){
+  const selected = document.querySelector('#sizes-' + safeId + ' .size-option.selected');
+  if(!selected) return null;
+  const input = selected.querySelector('input');
+  if(!input) return null;
+  const index = parseInt(input.value, 10);
+  return PRINT_SIZES[index] || null;
+}
+function printActionButtonHTML(w, safeId){
+  if(isPrintWaitlist(w)){
+    return '<button class="btn-checkout" onclick="openPrintWaitlistForm(\'' + w.id + '\',\'' + safeId + '\')">Request First Access</button>';
+  }
+  return '<button class="btn-checkout" onclick="buyPrint(\'' + w.id + '\',\'' + safeId + '\')">Claim This Print</button>';
+}
+
 function seriesCommerceCardHTML(w){
   const originalSubject = encodeURIComponent('Original Inquiry: ' + w.title);
   const originalBody = encodeURIComponent('Hello,\n\nI am interested in the original "' + w.title + '" (' + w.medium + ', ' + w.year + ').\n\nPlease share pricing and availability.\n\nThank you.');
@@ -430,7 +475,7 @@ function seriesCommerceCardHTML(w){
           + '</label>';
       }).join('')
     + '</div>'
-    + '<button class="btn-checkout" onclick="buyPrint(\'' + w.id + '\',\'series-' + w.id + '\')">Claim This Print</button>'
+    + printActionButtonHTML(w, 'series-' + w.id)
     + '</div></div></div>';
 }
 
@@ -452,11 +497,121 @@ function printCardHTML(w){
       }).join('')
     + '</div>'
     + '<div class="payment-options">'
-    + '<button class="btn-checkout" onclick="buyPrint(\'' + w.id + '\',\'' + safe + '\')">Claim This Print</button>'
+    + printActionButtonHTML(w, safe)
     + '</div></div></div>';
 }
 
 function selectSize(label){ const container=label.closest('.size-selector'); container.querySelectorAll('.size-option').forEach(l=>l.classList.remove('selected')); label.classList.add('selected'); }
+
+
+function openPrintWaitlistForm(artworkId, safeId) {
+  const w = getArtwork(artworkId);
+  if (!w) return;
+
+  const existing = document.getElementById('printWaitlistOverlay');
+  if (existing) existing.remove();
+
+  const selectedSize = getSelectedPrintSize(safeId);
+
+  window._pendingWaitlistArtworkId = artworkId;
+  window._pendingWaitlistSafeId = safeId;
+  window._pendingWaitlistSize = selectedSize;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'printWaitlistOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(8,7,6,.88);z-index:9000;display:flex;align-items:flex-start;justify-content:center;padding:18px;overflow-y:auto;';
+
+  const box = document.createElement('div');
+  box.style.cssText = 'background:var(--surface);border:1px solid var(--border);padding:34px 24px 30px;max-width:500px;width:100%;position:relative;margin:38px auto;box-sizing:border-box;box-shadow:0 24px 80px rgba(0,0,0,.35);';
+
+  box.innerHTML = ''
+    + '<button id="pwCloseBtn" style="position:absolute;top:14px;right:16px;background:none;border:none;color:var(--cream-dim);font-size:22px;cursor:pointer;line-height:1;">✕</button>'
+    + '<p style="font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;padding-right:34px;">Print Waitlist</p>'
+    + '<h2 style="font-family:var(--font-display);font-size:32px;font-weight:400;line-height:1.08;margin-bottom:8px;padding-right:34px;">Request First Access</h2>'
+    + '<p style="font-size:13px;color:var(--cream-dim);line-height:1.75;margin-bottom:22px;">Not yet released. Join the waitlist for early access and collector pricing before the public launch.</p>'
+    + '<p style="font-size:12px;color:var(--gold);line-height:1.6;margin-bottom:20px;">' + w.title + (selectedSize ? ' · ' + selectedSize.label : '') + '</p>'
+    + '<div style="display:flex;flex-direction:column;gap:14px;width:100%;">'
+    + '<div class="form-group"><label>First Name *</label><input id="pw-name" type="text" placeholder="Your first name" autocomplete="given-name" style="width:100%;box-sizing:border-box;"></div>'
+    + '<div class="form-group"><label>Email Address *</label><input id="pw-email" type="email" placeholder="you@email.com" autocomplete="email" style="width:100%;box-sizing:border-box;"></div>'
+    + '</div>'
+    + '<button id="printWaitlistSubmitBtn" class="btn-primary" style="width:100%;text-align:center;margin-top:24px;display:block;box-sizing:border-box;">Join Waitlist</button>'
+    + '<p style="font-size:11px;color:var(--muted);margin-top:14px;line-height:1.65;text-align:center;">No spam. You will only hear about this print release and collector updates.</p>';
+
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+
+  document.getElementById('pwCloseBtn').addEventListener('click', function () {
+    document.getElementById('printWaitlistOverlay').remove();
+  });
+
+  document.getElementById('printWaitlistSubmitBtn').addEventListener('click', submitPrintWaitlist);
+}
+
+async function submitPrintWaitlist() {
+  const artworkId = window._pendingWaitlistArtworkId;
+  const safeId = window._pendingWaitlistSafeId;
+  const selectedSize = getSelectedPrintSize(safeId) || window._pendingWaitlistSize;
+  const w = getArtwork(artworkId);
+
+  if (!w) {
+    showToast('Something went wrong. Please try again.');
+    return;
+  }
+
+  const firstName = document.getElementById('pw-name') ? document.getElementById('pw-name').value.trim() : '';
+  const email = document.getElementById('pw-email') ? document.getElementById('pw-email').value.trim() : '';
+
+  if (!firstName) {
+    showToast('Please enter your first name.');
+    return;
+  }
+
+  if (!email || !email.includes('@')) {
+    showToast('Please enter a valid email address.');
+    return;
+  }
+
+  const button = document.getElementById('printWaitlistSubmitBtn');
+  if (button) {
+    button.disabled = true;
+    button.textContent = 'Joining...';
+  }
+
+  try {
+    const resp = await fetch('/.netlify/functions/brevo-subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        firstName,
+        email,
+        source: getWaitlistSource(w),
+        artworkId: w.id,
+        artworkTitle: w.title,
+        printSize: selectedSize ? selectedSize.label : ''
+      })
+    });
+
+    const data = await resp.json().catch(function(){ return {}; });
+
+    if (resp.ok && data.ok) {
+      const overlay = document.getElementById('printWaitlistOverlay');
+      if (overlay) overlay.remove();
+      showToast('You are on the first-access list.', true);
+      return;
+    }
+
+    console.error('Waitlist signup failed:', data);
+    showToast('Waitlist sign-up is not ready yet. Please try again later.');
+  } catch (err) {
+    console.error('Waitlist error:', err);
+    showToast('Waitlist sign-up is not ready yet. Please try again later.');
+  }
+
+  if (button) {
+    button.disabled = false;
+    button.textContent = 'Join Waitlist';
+  }
+}
 
 function buyPrint(artworkId, safeId) {
   const selected = document.querySelector('#sizes-' + safeId + ' .size-option.selected');
