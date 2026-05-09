@@ -1,6 +1,4 @@
 exports.handler = async (event) => {
-  if (event.httpMethod !== 'POST') return json(405, { error: 'Method not allowed' });
-
   const allowedOrigins = ['https://casterart.com', 'https://www.casterart.com'];
   const origin = event.headers.origin || '';
   const corsOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
@@ -17,6 +15,10 @@ exports.handler = async (event) => {
     };
   }
 
+  if (event.httpMethod !== 'POST') {
+    return json(405, { error: 'Method not allowed' }, corsOrigin);
+  }
+
   try {
     const { firstName, email, source, listId } = JSON.parse(event.body || '{}');
 
@@ -25,18 +27,7 @@ exports.handler = async (event) => {
     }
 
     const apiKey = process.env.BREVO_API_KEY;
-
-    // Choose list based on source, or fall back to general Inner Circle list
-    let resolvedListId;
-    if (listId) {
-      resolvedListId = Number(listId);
-    } else if (source === 'print_buyer') {
-      resolvedListId = Number(process.env.BREVO_PRINT_BUYERS_LIST_ID);
-    } else if (source === 'originals_buyer') {
-      resolvedListId = Number(process.env.BREVO_ORIGINALS_LIST_ID);
-    } else {
-      resolvedListId = Number(process.env.BREVO_GENERAL_LIST_ID);
-    }
+    const resolvedListId = resolveBrevoListId(source, listId);
 
     if (!apiKey || !resolvedListId) {
       return json(501, { error: 'Brevo environment variables are not configured' }, corsOrigin);
@@ -73,6 +64,20 @@ exports.handler = async (event) => {
     return json(500, { error: 'Server error' }, corsOrigin);
   }
 };
+
+function resolveBrevoListId(source, listId) {
+  if (listId) return Number(listId);
+
+  const sourceMap = {
+    print_buyer: process.env.BREVO_PRINT_BUYERS_LIST_ID,
+    originals_buyer: process.env.BREVO_ORIGINALS_LIST_ID,
+    waitlist_broken: process.env.BREVO_WAITLIST_BROKEN_LIST_ID,
+    waitlist_shades: process.env.BREVO_WAITLIST_SHADES_LIST_ID,
+    waitlist_perception: process.env.BREVO_WAITLIST_PERCEPTION_LIST_ID,
+  };
+
+  return Number(sourceMap[source] || process.env.BREVO_GENERAL_LIST_ID);
+}
 
 function json(statusCode, body, origin) {
   return {
