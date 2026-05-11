@@ -216,21 +216,21 @@ const PRINT_SIZES = [
     price: '$80',
     amount: 80,
     currency: 'USD',
-    flwPlan: 'A4'
+    code: 'A4'
   },
   {
     label: 'A3 · 12" × 16"',
     price: '$130',
     amount: 130,
     currency: 'USD',
-    flwPlan: 'A3'
+    code: 'A3'
   },
   {
     label: 'A2 · 16" × 20"',
     price: '$220',
     amount: 220,
     currency: 'USD',
-    flwPlan: 'A2'
+    code: 'A2'
   }
 ];
 
@@ -754,8 +754,7 @@ async function proceedToPayment() {
         artworkId: artworkId,
         artworkTitle: w.title,
         sizeLabel: size.label,
-        sizeCode: size.flwPlan,
-        amount: size.amount,
+        sizeCode: size.code,
         currency: size.currency,
         customerName: fields.name,
         customerEmail: fields.email,
@@ -775,6 +774,11 @@ async function proceedToPayment() {
     if (!response.ok || !result.link) {
       console.error('Checkout creation failed:', result);
       showToast(result.error || 'Payment could not be started. Please try again.');
+
+      if (result.soldOut) {
+        const overlay = document.getElementById('shippingFormOverlay');
+        if (overlay) overlay.remove();
+      }
 
       if (button) {
         button.disabled = false;
@@ -853,12 +857,66 @@ async function handleCommissionSubmit(event){
     if(!allowedTypes.includes(file.type)){ showToast('Reference photos must be JPG, PNG, or WebP.'); return; }
     if(file.size > maxFileSize){ showToast(file.name + ' is too large. Maximum size is 2MB per file.'); return; }
   }
-  const data = new FormData(form);
+
+  const button = form.querySelector('button[type="submit"], .btn-submit');
+  const oldText = button ? button.textContent : '';
+  if(button){ button.disabled = true; button.textContent = 'Sending Inquiry...'; }
+
   try{
-    const resp = await fetch('/.netlify/functions/commission-inquiry',{method:'POST',body:data});
-    if(resp.ok){ showToast('Inquiry sent. I will reply personally.', true); form.reset(); }
-    else { fallbackCommissionEmail(form); }
-  } catch(err){ fallbackCommissionEmail(form); }
+    const attachments = await Promise.all(files.map(fileToBase64Attachment));
+    const payload = {
+      inquiry: {
+        name: getFieldValue('cf-name'),
+        email: getFieldValue('cf-email'),
+        phone: getFieldValue('cf-phone'),
+        country: getFieldValue('cf-country'),
+        city: getFieldValue('cf-city'),
+        size: getFieldValue('cf-size'),
+        medium: getFieldValue('cf-medium'),
+        deadline: getFieldValue('cf-deadline'),
+        budget: getFieldValue('cf-budget'),
+        subjects: getFieldValue('cf-subjects'),
+        shipping: getFieldValue('cf-shipping'),
+        vision: getFieldValue('cf-vision')
+      },
+      attachments
+    };
+
+    const resp = await fetch('/.netlify/functions/commission-inquiry',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+
+    if(resp.ok){
+      showToast('Inquiry sent. I will reply personally.', true);
+      form.reset();
+    } else {
+      const err = await resp.json().catch(()=>({}));
+      console.error('Commission inquiry failed:', err);
+      fallbackCommissionEmail(form);
+    }
+  } catch(err){
+    console.error('Commission inquiry error:', err);
+    fallbackCommissionEmail(form);
+  } finally {
+    if(button){ button.disabled = false; button.textContent = oldText; }
+  }
 }
+
+function getFieldValue(id){ return document.getElementById(id) ? document.getElementById(id).value.trim() : ''; }
+function fileToBase64Attachment(file){
+  return new Promise((resolve,reject)=>{
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result || '');
+      const content = result.includes(',') ? result.split(',').pop() : result;
+      resolve({ name:file.name, mimeType:file.type, size:file.size, content });
+    };
+    reader.onerror = () => reject(reader.error || new Error('Could not read reference photo'));
+    reader.readAsDataURL(file);
+  });
+}
+
 function fallbackCommissionEmail(form){ const get=id=>document.getElementById(id)?document.getElementById(id).value:''; const subject=encodeURIComponent('Commission Inquiry'); const body=encodeURIComponent('Name: ' + get('cf-name') + '\nEmail: ' + get('cf-email') + '\nPhone/WhatsApp: ' + get('cf-phone') + '\nCountry: ' + get('cf-country') + '\nCity: ' + get('cf-city') + '\nPreferred size: ' + get('cf-size') + '\nMedium: ' + get('cf-medium') + '\nDeadline: ' + get('cf-deadline') + '\nBudget: ' + get('cf-budget') + '\nSubjects: ' + get('cf-subjects') + '\nShipping address/notes: ' + get('cf-shipping') + '\n\nVision:\n' + get('cf-vision') + '\n\nReference photos were selected on the website form. If they were not attached automatically, please include them in your reply.'); window.location.href='mailto:' + SITE_EMAIL + '?subject=' + subject + '&body=' + body; }
 function showToast(msg,success=false){ const t=document.getElementById('toast'); if(!t) return; t.textContent=msg; t.className='toast'+(success?' success':''); t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3500); }

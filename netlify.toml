@@ -12,9 +12,3 @@
   from = "/series"
   to = "/series/perception.html"
   status = 302
-
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "DENY"
-    X-Content-Type-Options = "nosniff"

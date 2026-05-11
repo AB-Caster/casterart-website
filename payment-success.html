@@ -2,19 +2,34 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Payment Received — Abraham Caster</title>
+  <meta name="description" content="Payment received page for Abraham Caster limited edition print orders.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300;0,400;0,500;1,300;1,400&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <section style="min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;">
-    <div>
+  <section style="min-height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:48px 24px;">
+    <div style="max-width:640px;">
       <p class="section-label" style="justify-content:center;">Payment Status</p>
       <h1 class="section-title">Thank you.</h1>
-      <p style="color:var(--cream-dim);max-width:520px;line-height:1.8;">
-        If your payment was successful, your order has been received. You will get confirmation after payment verification.
+      <p style="color:var(--cream-dim);line-height:1.85;margin-bottom:18px;">
+        If Flutterwave showed your payment as successful, your order has been received and is now being verified automatically.
       </p>
-      <br>
-      <a href="prints.html" class="btn-primary">Back to Prints</a>
+      <p style="color:var(--cream-dim);line-height:1.85;margin-bottom:18px;">
+        After verification, you will receive an order confirmation by email with your artwork, print size, order reference, and assigned edition number.
+      </p>
+      <p style="color:var(--muted);font-size:13px;line-height:1.75;margin-bottom:32px;">
+        If you do not receive a confirmation email within 10 minutes, please email
+        <a href="mailto:info@casterart.com" style="color:var(--gold);">info@casterart.com</a>
+        with your payment reference.
+      </p>
+      <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;">
+        <a href="prints.html" class="btn-primary">Back to Prints</a>
+        <a href="index.html" class="btn-outline">Return Home</a>
+      </div>
     </div>
   </section>
 </body>
