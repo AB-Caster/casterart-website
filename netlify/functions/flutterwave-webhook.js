@@ -14,7 +14,7 @@ const EXPECTED_PRINT_PRICES = {
 
 const CREATIVEHUB_PRODUCTS = {
   grey: {
-    A4: { sku: '38031-7370', productId: 38031, printOptionId: 7370 },
+    A4: { sku: '7484125-2326391', productId: 7484125, printOptionId: 2326391 },
     A3: { sku: '7484125-2326381', productId: 7484125, printOptionId: 2326381 },
     A2: { sku: '7484125-2326352', productId: 7484125, printOptionId: 2326352 }
   },
