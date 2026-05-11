@@ -357,6 +357,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupFadeObserver(document);
   setupCursor();
   checkAndShowPopup();
+  setupCommissionReferenceUploads();
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); dismissPopup(); } });
 });
 
@@ -755,6 +756,7 @@ async function proceedToPayment() {
         artworkTitle: w.title,
         sizeLabel: size.label,
         sizeCode: size.code,
+        amount: size.amount,
         currency: size.currency,
         customerName: fields.name,
         customerEmail: fields.email,
@@ -774,11 +776,6 @@ async function proceedToPayment() {
     if (!response.ok || !result.link) {
       console.error('Checkout creation failed:', result);
       showToast(result.error || 'Payment could not be started. Please try again.');
-
-      if (result.soldOut) {
-        const overlay = document.getElementById('shippingFormOverlay');
-        if (overlay) overlay.remove();
-      }
 
       if (button) {
         button.disabled = false;
@@ -835,20 +832,74 @@ async function handleNewsletterSubmit(nameId, emailId) {
     showToast('Something went wrong. Please try again.');
   }
 }
+const commissionReferenceFiles = [];
+
+function setupCommissionReferenceUploads(){
+  const input = document.getElementById('cf-references');
+  if(!input) return;
+
+  input.addEventListener('change', () => {
+    const incoming = Array.from(input.files || []);
+    for(const file of incoming){
+      const duplicate = commissionReferenceFiles.some(existing =>
+        existing.name === file.name &&
+        existing.size === file.size &&
+        existing.lastModified === file.lastModified
+      );
+      if(!duplicate && commissionReferenceFiles.length < 3){
+        commissionReferenceFiles.push(file);
+      }
+    }
+
+    if(incoming.length && commissionReferenceFiles.length >= 3){
+      showToast('Maximum 3 reference photos selected.');
+    }
+
+    input.value = '';
+    updateCommissionReferenceSummary();
+  });
+
+  updateCommissionReferenceSummary();
+}
+
+function updateCommissionReferenceSummary(){
+  const input = document.getElementById('cf-references');
+  if(!input) return;
+  const help = input.closest('.form-group')?.querySelector('.form-help');
+  if(!help) return;
+
+  if(!commissionReferenceFiles.length){
+    help.textContent = 'Upload up to 3 clear reference photos. JPG, PNG or WebP only. Maximum 2MB per file.';
+    return;
+  }
+
+  help.textContent = `${commissionReferenceFiles.length}/3 reference photo${commissionReferenceFiles.length === 1 ? '' : 's'} selected: ${commissionReferenceFiles.map(file => file.name).join(', ')}`;
+}
+
+function clearCommissionReferenceUploads(){
+  commissionReferenceFiles.length = 0;
+  const input = document.getElementById('cf-references');
+  if(input) input.value = '';
+  updateCommissionReferenceSummary();
+}
+
 async function handleCommissionSubmit(event){
   if(event) event.preventDefault();
   const form = document.getElementById('commissionForm');
   if(!form) return;
-  const required = ['cf-name','cf-email','cf-vision','cf-country','cf-references'];
+  const required = ['cf-name','cf-email','cf-vision','cf-country'];
   for(const id of required){
     const el = document.getElementById(id);
-    if(!el || (el.type === 'file' ? !el.files.length : !el.value.trim())){
+    if(!el || !el.value.trim()){
       showToast('Please complete the required commission details.');
       return;
     }
   }
-  const referenceInput = document.getElementById('cf-references');
-  const files = referenceInput ? Array.from(referenceInput.files) : [];
+  const files = [...commissionReferenceFiles];
+  if(!files.length){
+    showToast('Please upload at least one reference photo.');
+    return;
+  }
   const maxFiles = 3;
   const maxFileSize = 2 * 1024 * 1024;
   const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
@@ -891,6 +942,7 @@ async function handleCommissionSubmit(event){
     if(resp.ok){
       showToast('Inquiry sent. I will reply personally.', true);
       form.reset();
+      clearCommissionReferenceUploads();
     } else {
       const err = await resp.json().catch(()=>({}));
       console.error('Commission inquiry failed:', err);
