@@ -49,24 +49,21 @@
 <div class="form-group"><label for="cf-shipping">Shipping Address / Delivery Notes</label><textarea id="cf-shipping" name="shipping" rows="4" placeholder="You can provide the full address now or just enough details for an accurate shipping quote."></textarea></div>
 <div class="form-group">
   <label for="cf-references">Reference Photos *</label>
-  <input 
-    id="cf-references" 
-    name="references" 
-    type="file" 
-    accept="image/jpeg,image/png,image/webp" 
-    multiple 
+  <input
+    id="cf-references"
+    name="references"
+    type="file"
+    accept="image/jpeg,image/png,image/webp"
+    multiple
     required
   >
-  <div class="form-help">
-    Upload up to 3 clear reference photos. JPG, PNG or WebP only. Maximum 2MB per file.</div></div>
+  <div class="form-help" id="cf-references-help">
+    Add up to 3 clear reference photos. You can choose them one after another. JPG, PNG or WebP only. Maximum 1.5MB per file.
+  </div>
+</div>
 <button class="btn-submit" type="submit">Send Commission Inquiry</button><div class="backend-note"><p>Security note: Uploaded references and form data are safely stored and protected.</p></div>
 </form></div></div></section>
 <section class="section-surface"><div class="fade-in" style="text-align:center;max-width:700px;margin:0 auto 56px"><p class="section-label" style="justify-content:center">The Process</p><h2 class="section-title">How a Commission<br><em>Becomes Real</em></h2></div><div class="process-grid fade-in"><div class="process-step"><div class="process-num">01</div><h3>Inquiry</h3><p>You share the subject, story, references, size, timeline, and shipping destination.</p></div><div class="process-step"><div class="process-num">02</div><h3>Quote</h3><p>I review the details and send pricing, timeline, payment options, and what I need next.</p></div><div class="process-step"><div class="process-num">03</div><h3>Creation</h3><p>After deposit, the artwork begins. Progress updates are shared at key stages.</p></div><div class="process-step"><div class="process-num">04</div><h3>Delivery</h3><p>The finished work ships with documentation, certificate of authenticity, and tracking.</p></div></div></section>
 <section><div class="youtube-panel fade-in"><p class="section-label" style="justify-content:center">Watch the Work</p><h2 class="section-title">Follow the<br><em>Creative Process</em></h2><p>The making is part of the story. Follow the drawings, experiments, failures, lessons, and current evolution from hyperrealism into abstract figurative expression.</p><a href="https://www.youtube.com/@Caster_art" target="_blank" rel="noopener" class="yt-link">Subscribe on YouTube</a></div></section>
 <section id="newsletter" class="section-surface"><div class="newsletter-wrap fade-in"><p class="section-label">The Inner Circle</p><div class="newsletter-inner"><h2 class="section-title">First Access.<br>No Noise.</h2><p>New originals, limited print drops, studio notes, and collector-first release announcements.</p><div class="form-row" style="margin-bottom:12px"><div class="form-group"><input type="text" id="nl-name" placeholder="First name" autocomplete="given-name"></div><div class="form-group"><input type="email" id="nl-email" placeholder="Email address" autocomplete="email"></div></div><button class="btn-primary" style="width:100%;text-align:center;display:block" onclick="handleNewsletterSubmit('nl-name','nl-email')">Join the List</button><p class="newsletter-note">No spam. Unsubscribe any time. Your email is never shared.</p></div></div></section>
-<div id="footer-placeholder"></div><div id="popup-placeholder"></div><script src="shared.js"></script>
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    setupCommissionReferenceUploads();
-  });
-</script></body></html>
+<div id="footer-placeholder"></div><div id="popup-placeholder"></div><script src="shared.js"></script></body></html>

@@ -833,68 +833,115 @@ async function handleNewsletterSubmit(nameId, emailId) {
   }
 }
 const commissionReferenceFiles = [];
+let commissionReferenceUploadsReady = false;
 
 function setupCommissionReferenceUploads(){
+  if(commissionReferenceUploadsReady) return;
+  commissionReferenceUploadsReady = true;
+
   const input = document.getElementById('cf-references');
   if(!input) return;
+  ensureCommissionReferenceStyles();
 
-  input.addEventListener('change', () => {
-    const incoming = Array.from(input.files || []);
+  input.addEventListener('change', function(){
+    addCommissionReferenceFiles(Array.from(input.files || []));
+    renderCommissionReferenceUploads();
 
-    for(const file of incoming){
-      const duplicate = commissionReferenceFiles.some(existing =>
-        existing.name === file.name &&
-        existing.size === file.size &&
-        existing.lastModified === file.lastModified
-      );
-
-      if(!duplicate){
-        if(commissionReferenceFiles.length >= 3){
-          showToast('Maximum 3 reference photos allowed.');
-          break;
-        }
-        commissionReferenceFiles.push(file);
-      }
-    }
-
-    syncCommissionReferenceInput();
-    updateCommissionReferenceSummary();
+    // Important: clear the native file input after each selection.
+    // This stops the browser from replacing our saved list with only the latest file.
+    input.value = '';
   });
 
-  updateCommissionReferenceSummary();
+  renderCommissionReferenceUploads();
 }
 
-function syncCommissionReferenceInput(){
+function addCommissionReferenceFiles(files){
+  for(const file of files){
+    const duplicate = commissionReferenceFiles.some(existing =>
+      existing.name === file.name &&
+      existing.size === file.size &&
+      existing.lastModified === file.lastModified
+    );
+
+    if(duplicate) continue;
+
+    if(commissionReferenceFiles.length >= 3){
+      showToast('Maximum 3 reference photos allowed.');
+      break;
+    }
+
+    commissionReferenceFiles.push(file);
+  }
+}
+
+function removeCommissionReferenceFile(index){
+  commissionReferenceFiles.splice(index, 1);
+  renderCommissionReferenceUploads();
+}
+
+function renderCommissionReferenceUploads(){
   const input = document.getElementById('cf-references');
   if(!input) return;
 
-  const dataTransfer = new DataTransfer();
-  commissionReferenceFiles.forEach(file => dataTransfer.items.add(file));
-  input.files = dataTransfer.files;
-}
+  const group = input.closest('.form-group');
+  const help = document.getElementById('cf-references-help') || (group ? group.querySelector('.form-help') : null);
 
-function updateCommissionReferenceSummary(){
-  const input = document.getElementById('cf-references');
-  if(!input) return;
+  if(help){
+    if(!commissionReferenceFiles.length){
+      help.innerHTML = 'Add up to 3 clear reference photos. You can choose them one after another. JPG, PNG or WebP only. Maximum 1.5MB per file.';
+    } else {
+      help.innerHTML =
+        commissionReferenceFiles.length + '/3 reference photo' +
+        (commissionReferenceFiles.length === 1 ? '' : 's') +
+        ' selected. You can add more, or remove one below.';
+    }
+  }
 
-  const help = input.closest('.form-group')?.querySelector('.form-help');
-  if(!help) return;
+  let list = document.getElementById('cf-reference-list');
+  if(!list && group){
+    list = document.createElement('div');
+    list.id = 'cf-reference-list';
+    list.className = 'reference-file-list';
+    input.insertAdjacentElement('afterend', list);
+  }
+
+  if(!list) return;
 
   if(!commissionReferenceFiles.length){
-    help.textContent = 'Upload up to 3 clear reference photos. JPG, PNG or WebP only. Maximum 2MB per file.';
+    list.innerHTML = '';
     return;
   }
 
-  help.textContent = `${commissionReferenceFiles.length}/3 reference photo${commissionReferenceFiles.length === 1 ? '' : 's'} selected: ${commissionReferenceFiles.map(file => file.name).join(', ')}`;
+  list.innerHTML = commissionReferenceFiles.map(function(file, index){
+    return '<div class="reference-file-item">'
+      + '<span>' + escapeHtml(file.name) + '</span>'
+      + '<button type="button" onclick="removeCommissionReferenceFile(' + index + ')">Remove</button>'
+      + '</div>';
+  }).join('');
 }
 
 function clearCommissionReferenceUploads(){
   commissionReferenceFiles.length = 0;
   const input = document.getElementById('cf-references');
-  if(input){
-    input.value = '';
-  }
-  updateCommissionReferenceSummary();
+  if(input) input.value = '';
+  renderCommissionReferenceUploads();
+}
+
+function ensureCommissionReferenceStyles(){
+  if(document.getElementById('commission-reference-upload-styles')) return;
+  const style = document.createElement('style');
+  style.id = 'commission-reference-upload-styles';
+  style.textContent = '.reference-file-list{display:flex;flex-direction:column;gap:8px;margin-top:10px}.reference-file-item{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--border);background:var(--surface-2);font-size:12.5px;color:var(--cream-dim)}.reference-file-item span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.reference-file-item button{border:1px solid var(--border-md);background:transparent;color:var(--gold);font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:6px 10px;flex-shrink:0}';
+  document.head.appendChild(style);
+}
+
+function escapeHtml(value){
+  return String(value || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 async function handleCommissionSubmit(event){
@@ -915,12 +962,12 @@ async function handleCommissionSubmit(event){
     return;
   }
   const maxFiles = 3;
-  const maxFileSize = 2 * 1024 * 1024;
+  const maxFileSize = 1.5 * 1024 * 1024;
   const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
   if(files.length > maxFiles){ showToast('Please upload no more than 3 reference photos.'); return; }
   for(const file of files){
     if(!allowedTypes.includes(file.type)){ showToast('Reference photos must be JPG, PNG, or WebP.'); return; }
-    if(file.size > maxFileSize){ showToast(file.name + ' is too large. Maximum size is 2MB per file.'); return; }
+    if(file.size > maxFileSize){ showToast(file.name + ' is too large. Maximum size is 1.5MB per file.'); return; }
   }
 
   const button = form.querySelector('button[type="submit"], .btn-submit');
