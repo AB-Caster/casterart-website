@@ -754,7 +754,7 @@ async function getCreativeHubCountries() {
   const response = await creativeHubRequest('/api/v1/countries/query', {
     method: 'POST',
     body: {
-      Page: 0,
+      Page: 1,
       PageSize: 300,
       Filter: {},
       Sorts: []
