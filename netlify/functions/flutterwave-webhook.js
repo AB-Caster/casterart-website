@@ -247,8 +247,9 @@ exports.handler = async (event) => {
       editionNumber: order.editionNumber,
       creativehubOrderId: creativeHubResult.creativehubOrderId || null
     });
-  } catch (error) {
-    console.error('CreativeHub fulfillment failed:', error);
+ } catch (error) {
+    console.error('CreativeHub fulfillment failed — MESSAGE:', error && error.message ? error.message : String(error));
+    console.error('CreativeHub fulfillment failed — STACK:', error && error.stack ? error.stack : 'no stack');
     await updateOrderFulfillment(order.orderReferenceId, {
       fulfillmentStatus: 'creativehub_failed'
     });
