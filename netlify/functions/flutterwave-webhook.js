@@ -1,7 +1,7 @@
 const SUPABASE_URL = normaliseSupabaseUrl(process.env.SUPABASE_URL);
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-const CREATIVEHUB_BASE_URL = 'https://api.creativehub.io';
+const CREATIVEHUB_BASE_URL = process.env.CREATIVEHUB_BASE_URL || 'https://api.creativehub.io';
 let creativeHubCountriesCache = null;
 let creativeHubCountriesCacheTime = 0;
 const CREATIVEHUB_COUNTRIES_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
@@ -14,7 +14,7 @@ const EXPECTED_PRINT_PRICES = {
 
 const CREATIVEHUB_PRODUCTS = {
   grey: {
-    A4: { sku: '7484125-2326391', productId: 7484125, printOptionId: 2326391 },
+    A4: { sku: '38031-7370', productId: 38031, printOptionId: 7370 },
     A3: { sku: '7484125-2326381', productId: 7484125, printOptionId: 2326381 },
     A2: { sku: '7484125-2326352', productId: 7484125, printOptionId: 2326352 }
   },
