@@ -840,31 +840,43 @@ function setupCommissionReferenceUploads(){
 
   input.addEventListener('change', () => {
     const incoming = Array.from(input.files || []);
+
     for(const file of incoming){
       const duplicate = commissionReferenceFiles.some(existing =>
         existing.name === file.name &&
         existing.size === file.size &&
         existing.lastModified === file.lastModified
       );
-      if(!duplicate && commissionReferenceFiles.length < 3){
+
+      if(!duplicate){
+        if(commissionReferenceFiles.length >= 3){
+          showToast('Maximum 3 reference photos allowed.');
+          break;
+        }
         commissionReferenceFiles.push(file);
       }
     }
 
-    if(incoming.length && commissionReferenceFiles.length >= 3){
-      showToast('Maximum 3 reference photos selected.');
-    }
-
-    input.value = '';
+    syncCommissionReferenceInput();
     updateCommissionReferenceSummary();
   });
 
   updateCommissionReferenceSummary();
 }
 
+function syncCommissionReferenceInput(){
+  const input = document.getElementById('cf-references');
+  if(!input) return;
+
+  const dataTransfer = new DataTransfer();
+  commissionReferenceFiles.forEach(file => dataTransfer.items.add(file));
+  input.files = dataTransfer.files;
+}
+
 function updateCommissionReferenceSummary(){
   const input = document.getElementById('cf-references');
   if(!input) return;
+
   const help = input.closest('.form-group')?.querySelector('.form-help');
   if(!help) return;
 
@@ -879,7 +891,9 @@ function updateCommissionReferenceSummary(){
 function clearCommissionReferenceUploads(){
   commissionReferenceFiles.length = 0;
   const input = document.getElementById('cf-references');
-  if(input) input.value = '';
+  if(input){
+    input.value = '';
+  }
   updateCommissionReferenceSummary();
 }
 
