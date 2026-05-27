@@ -299,6 +299,7 @@ const FOOTER_HTML = `
     <div class="footer-legal">
       <a href="policies.html#shipping">Shipping Policy</a>
       <a href="policies.html#privacy">Privacy Policy</a>
+      <a href="terms.html">Terms</a>
     </div>
     <div class="footer-copy">© ${new Date().getFullYear()} Abraham Caster. All rights reserved.</div>
   </div>
@@ -357,6 +358,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupFadeObserver(document);
   setupCursor();
   checkAndShowPopup();
+  initPrivacyConsentBanner();
   setupCommissionReferenceUploads();
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); dismissPopup(); } });
 });
@@ -548,6 +550,106 @@ function openPrintWaitlistForm(artworkId, safeId) {
   document.getElementById('printWaitlistSubmitBtn').addEventListener('click', submitPrintWaitlist);
 }
 
+
+const TURNSTILE_SITE_KEY = '0x4AAAAAADWy99HqSIFaOVaM';
+let turnstileScriptPromise = null;
+let turnstileWidgetId = null;
+
+function loadTurnstileScript(){
+  if(window.turnstile) return Promise.resolve();
+  if(turnstileScriptPromise) return turnstileScriptPromise;
+
+  turnstileScriptPromise = new Promise(function(resolve, reject){
+    const existing = document.querySelector('script[data-turnstile-script="true"]');
+    if(existing){
+      existing.addEventListener('load', function(){ resolve(); }, { once:true });
+      existing.addEventListener('error', function(){ reject(new Error('Turnstile could not load')); }, { once:true });
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+    script.async = true;
+    script.defer = true;
+    script.dataset.turnstileScript = 'true';
+    script.onload = function(){ resolve(); };
+    script.onerror = function(){ reject(new Error('Turnstile could not load')); };
+    document.head.appendChild(script);
+  });
+
+  return turnstileScriptPromise;
+}
+
+function getTurnstileOverlay(){
+  let overlay = document.getElementById('turnstileOverlay');
+  if(overlay) return overlay;
+
+  overlay = document.createElement('div');
+  overlay.id = 'turnstileOverlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(8,7,6,.72);z-index:99999;display:none;align-items:center;justify-content:center;padding:20px;';
+  overlay.innerHTML = '<div style="background:var(--surface);border:1px solid var(--border);padding:24px;max-width:360px;width:100%;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.35);">'
+    + '<p style="font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);margin-bottom:12px;">Security Check</p>'
+    + '<p style="font-size:13px;color:var(--cream-dim);line-height:1.6;margin-bottom:16px;">Verifying this request before continuing.</p>'
+    + '<div id="turnstile-container" style="display:flex;justify-content:center;"></div>'
+    + '</div>';
+  document.body.appendChild(overlay);
+  return overlay;
+}
+
+async function getTurnstileToken(action){
+  await loadTurnstileScript();
+
+  if(!window.turnstile){
+    throw new Error('Verification is not ready');
+  }
+
+  const overlay = getTurnstileOverlay();
+  const container = document.getElementById('turnstile-container');
+  overlay.style.display = 'flex';
+
+  return new Promise(function(resolve, reject){
+    let settled = false;
+    const cleanup = function(){
+      overlay.style.display = 'none';
+    };
+    const done = function(token){
+      if(settled) return;
+      settled = true;
+      cleanup();
+      resolve(token);
+    };
+    const fail = function(message){
+      if(settled) return;
+      settled = true;
+      cleanup();
+      reject(new Error(message || 'Verification failed'));
+    };
+
+    try{
+      if(turnstileWidgetId !== null){
+        window.turnstile.remove(turnstileWidgetId);
+        turnstileWidgetId = null;
+      }
+      container.innerHTML = '';
+
+      turnstileWidgetId = window.turnstile.render(container, {
+        sitekey: TURNSTILE_SITE_KEY,
+        execution: 'execute',
+        appearance: 'interaction-only',
+        action: action || 'submit',
+        callback: function(token){ done(token); },
+        'error-callback': function(){ fail('Verification failed. Please try again.'); },
+        'expired-callback': function(){ fail('Verification expired. Please try again.'); },
+        'timeout-callback': function(){ fail('Verification timed out. Please try again.'); }
+      });
+
+      window.turnstile.execute(turnstileWidgetId);
+    } catch(err){
+      fail(err && err.message ? err.message : 'Verification failed. Please try again.');
+    }
+  });
+}
+
 async function submitPrintWaitlist() {
   const artworkId = window._pendingWaitlistArtworkId;
   const safeId = window._pendingWaitlistSafeId;
@@ -567,7 +669,7 @@ async function submitPrintWaitlist() {
     return;
   }
 
-  if (!email || !email.includes('@')) {
+  if (!isValidEmailAddress(email)) {
     showToast('Please enter a valid email address.');
     return;
   }
@@ -588,7 +690,8 @@ async function submitPrintWaitlist() {
         source: getWaitlistSource(w),
         artworkId: w.id,
         artworkTitle: w.title,
-        printSize: selectedSize ? selectedSize.label : ''
+        printSize: selectedSize ? selectedSize.label : '',
+        turnstileToken: await getTurnstileToken('print_waitlist')
       })
     });
 
@@ -690,7 +793,11 @@ function openShippingForm(artworkId, size, artwork) {
 
     + '</div>'
 
-    + '<button id="proceedPaymentBtn" class="btn-primary" style="width:100%;text-align:center;margin-top:24px;display:block;box-sizing:border-box;">Proceed to Payment → ' + size.price + '</button>'
+    + '<label style="display:flex;gap:10px;align-items:flex-start;margin-top:20px;font-size:12px;color:var(--cream-dim);line-height:1.65;">'
+    + '<input id="sf-customs" type="checkbox" style="margin-top:3px;flex-shrink:0;">'
+    + '<span>I understand that import duties, customs fees, and local taxes may apply in my country and are my responsibility as the buyer.</span>'
+    + '</label>'
+    + '<button id="proceedPaymentBtn" class="btn-primary" style="width:100%;text-align:center;margin-top:18px;display:block;box-sizing:border-box;">Proceed to Payment → ' + size.price + '</button>'
     + '<p style="font-size:11.5px;color:var(--muted);margin-top:14px;line-height:1.7;text-align:center;">Your address is used only to ship your print. Free worldwide shipping included.</p>';
 
   overlay.appendChild(box);
@@ -730,8 +837,14 @@ async function proceedToPayment() {
     }
   }
 
-  if (fields.email.indexOf('@') === -1) {
+  if (!isValidEmailAddress(fields.email)) {
     showToast('Please enter a valid email address.');
+    return;
+  }
+
+  const customsAccepted = document.getElementById('sf-customs') ? document.getElementById('sf-customs').checked : false;
+  if (!customsAccepted) {
+    showToast('Please confirm the customs and import tax notice before payment.');
     return;
   }
 
@@ -767,7 +880,8 @@ async function proceedToPayment() {
           state: fields.state,
           postal: fields.postal,
           country: fields.country
-        }
+        },
+        turnstileToken: await getTurnstileToken('print_checkout')
       })
     });
 
@@ -806,18 +920,19 @@ function closeMobileNav(){ document.getElementById('mobileNav').classList.remove
 function checkAndShowPopup(){ if(localStorage.getItem('caster_subscribed')==='true') return; const last=localStorage.getItem('caster_popup_shown'); const now=Date.now(), hours24=86400000; if(!last || now-parseInt(last,10)>hours24) setTimeout(showPopup,3500); }
 function showPopup(){ const overlay=document.getElementById('popupOverlay'); if(overlay){ overlay.classList.add('active'); document.body.style.overflow='hidden'; localStorage.setItem('caster_popup_shown',Date.now().toString()); } }
 function dismissPopup(){ const overlay=document.getElementById('popupOverlay'); if(overlay){ overlay.classList.remove('active'); document.body.style.overflow=''; } }
-async function handlePopupSubscribe(){ const name=document.getElementById('popupName').value.trim(); const email=document.getElementById('popupEmail').value.trim(); if(!name){showToast('Please enter your first name.');return;} if(!email||!email.includes('@')){showToast('Please enter a valid email address.');return;} await subscribeToList(name,email,'popup'); }
-async function subscribeToList(firstName,email,source='newsletter'){ try{ const resp=await fetch('/.netlify/functions/brevo-subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({firstName,email,source})}); if(resp.ok){ localStorage.setItem('caster_subscribed','true'); if(source==='popup'){document.getElementById('popupForm').style.display='none';document.getElementById('popupSuccess').style.display='block';setTimeout(dismissPopup,2500);} else showToast('You are in. Welcome to the inner circle.',true); } else showToast('Sign-up is not ready yet. Please try again later.'); } catch(err){ console.warn(err); showToast('Sign-up is not ready yet. Please try again later.'); } }
+function isValidEmailAddress(email){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || '').trim()) && String(email || '').trim().length <= 254; }
+async function handlePopupSubscribe(){ const name=document.getElementById('popupName').value.trim(); const email=document.getElementById('popupEmail').value.trim(); if(!name){showToast('Please enter your first name.');return;} if(!isValidEmailAddress(email)){showToast('Please enter a valid email address.');return;} await subscribeToList(name,email,'popup'); }
+async function subscribeToList(firstName,email,source='newsletter'){ try{ const resp=await fetch('/.netlify/functions/brevo-subscribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({firstName,email,source,turnstileToken:await getTurnstileToken(source==='popup'?'popup_subscribe':'newsletter_subscribe')})}); if(resp.ok){ localStorage.setItem('caster_subscribed','true'); if(source==='popup'){document.getElementById('popupForm').style.display='none';document.getElementById('popupSuccess').style.display='block';setTimeout(dismissPopup,2500);} else showToast('You are in. Welcome to the inner circle.',true); } else showToast('Sign-up is not ready yet. Please try again later.'); } catch(err){ console.warn(err); showToast('Sign-up is not ready yet. Please try again later.'); } }
 async function handleNewsletterSubmit(nameId, emailId) {
   const firstName = document.getElementById(nameId) ? document.getElementById(nameId).value.trim() : '';
   const email = document.getElementById(emailId) ? document.getElementById(emailId).value.trim() : '';
   if (!firstName || !email) { showToast('Please enter your first name and email address.'); return; }
-  if (!email.includes('@')) { showToast('Please enter a valid email address.'); return; }
+  if (!isValidEmailAddress(email)) { showToast('Please enter a valid email address.'); return; }
   try {
     const resp = await fetch('/.netlify/functions/brevo-subscribe', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ firstName, email, source: 'newsletter' })
+      body: JSON.stringify({ firstName, email, source: 'newsletter', turnstileToken: await getTurnstileToken('newsletter_subscribe') })
     });
     const data = await resp.json();
     if (resp.ok && data.ok) {
@@ -991,7 +1106,8 @@ async function handleCommissionSubmit(event){
         shipping: getFieldValue('cf-shipping'),
         vision: getFieldValue('cf-vision')
       },
-      attachments
+      attachments,
+      turnstileToken: await getTurnstileToken('commission_inquiry')
     };
 
     const resp = await fetch('/.netlify/functions/commission-inquiry',{
@@ -1032,4 +1148,21 @@ function fileToBase64Attachment(file){
 }
 
 function fallbackCommissionEmail(form){ const get=id=>document.getElementById(id)?document.getElementById(id).value:''; const subject=encodeURIComponent('Commission Inquiry'); const body=encodeURIComponent('Name: ' + get('cf-name') + '\nEmail: ' + get('cf-email') + '\nPhone/WhatsApp: ' + get('cf-phone') + '\nCountry: ' + get('cf-country') + '\nCity: ' + get('cf-city') + '\nPreferred size: ' + get('cf-size') + '\nMedium: ' + get('cf-medium') + '\nDeadline: ' + get('cf-deadline') + '\nBudget: ' + get('cf-budget') + '\nSubjects: ' + get('cf-subjects') + '\nShipping address/notes: ' + get('cf-shipping') + '\n\nVision:\n' + get('cf-vision') + '\n\nReference photos were selected on the website form. If they were not attached automatically, please include them in your reply.'); window.location.href='mailto:' + SITE_EMAIL + '?subject=' + subject + '&body=' + body; }
+
+function initPrivacyConsentBanner(){
+  if(localStorage.getItem('caster_privacy_notice_accepted') === 'true') return;
+  const banner = document.createElement('div');
+  banner.id = 'privacyConsentBanner';
+  banner.style.cssText = 'position:fixed;left:18px;right:18px;bottom:18px;z-index:10000;background:var(--surface);border:1px solid var(--border-strong);padding:16px 18px;display:flex;gap:14px;align-items:center;justify-content:space-between;box-shadow:0 18px 50px rgba(0,0,0,.35);font-size:12.5px;color:var(--cream-dim);line-height:1.6;';
+  banner.innerHTML = '<span>This site uses necessary local storage for preferences and may process your details when you join the list, inquire, or buy. Read the <a href="policies.html#privacy" style="color:var(--gold);border-bottom:1px solid var(--gold-dim);">Privacy Policy</a>.</span><button type="button" id="privacyConsentAccept" class="btn-primary" style="padding:10px 18px;white-space:nowrap;">Accept</button>';
+  document.body.appendChild(banner);
+  const button = document.getElementById('privacyConsentAccept');
+  if(button){
+    button.addEventListener('click', function(){
+      localStorage.setItem('caster_privacy_notice_accepted', 'true');
+      banner.remove();
+    });
+  }
+}
+
 function showToast(msg,success=false){ const t=document.getElementById('toast'); if(!t) return; t.textContent=msg; t.className='toast'+(success?' success':''); t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3500); }

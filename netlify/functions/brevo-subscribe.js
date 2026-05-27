@@ -10,6 +10,7 @@ exports.handler = async (event) => {
         'Access-Control-Allow-Origin': corsOrigin,
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type',
+        'Vary': 'Origin',
       },
       body: ''
     };
@@ -19,15 +20,29 @@ exports.handler = async (event) => {
     return json(405, { error: 'Method not allowed' }, corsOrigin);
   }
 
-  try {
-    const { firstName, email, source, listId } = JSON.parse(event.body || '{}');
+  if (origin && !allowedOrigins.includes(origin)) {
+    return json(403, { error: 'Forbidden origin' }, corsOrigin);
+  }
 
-    if (!firstName || !email || !email.includes('@')) {
+  try {
+    const { firstName, email, source, listId, turnstileToken } = JSON.parse(event.body || '{}');
+
+    const cleanFirstName = clean(firstName);
+    const cleanEmail = clean(email).toLowerCase();
+    const cleanSource = clean(source || 'website');
+
+    if (!cleanFirstName || cleanFirstName.length > 100 || !isValidEmail(cleanEmail)) {
       return json(400, { error: 'Missing or invalid firstName or email' }, corsOrigin);
     }
 
+    if (cleanSource.length > 80) {
+      return json(400, { error: 'Invalid signup source' }, corsOrigin);
+    }
+
+    await verifyTurnstileToken(turnstileToken);
+
     const apiKey = process.env.BREVO_API_KEY;
-    const resolvedListId = resolveBrevoListId(source, listId);
+    const resolvedListId = resolveBrevoListId(cleanSource, listId);
 
     if (!apiKey || !resolvedListId) {
       return json(501, { error: 'Brevo environment variables are not configured' }, corsOrigin);
@@ -41,10 +56,10 @@ exports.handler = async (event) => {
         'api-key': apiKey
       },
       body: JSON.stringify({
-        email,
+        email: cleanEmail,
         attributes: {
-          FIRSTNAME: firstName,
-          SOURCE: source || 'website'
+          FIRSTNAME: cleanFirstName,
+          SOURCE: cleanSource
         },
         listIds: [resolvedListId],
         updateEnabled: true
@@ -61,7 +76,7 @@ exports.handler = async (event) => {
 
   } catch (error) {
     console.error('Handler error:', error);
-    return json(500, { error: 'Server error' }, corsOrigin);
+    return json(error.statusCode || 500, { error: error.expose ? error.message : 'Server error' }, corsOrigin);
   }
 };
 
@@ -84,8 +99,65 @@ function json(statusCode, body, origin) {
     statusCode,
     headers: {
       'content-type': 'application/json',
-      'Access-Control-Allow-Origin': origin || 'https://casterart.com'
+      'Access-Control-Allow-Origin': origin || 'https://casterart.com',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      'Vary': 'Origin'
     },
     body: JSON.stringify(body)
   };
+}
+
+exports.config = {
+  path: '/.netlify/functions/brevo-subscribe',
+  rateLimit: {
+    windowLimit: 10,
+    windowSize: 180,
+    aggregateBy: ['ip', 'domain']
+  }
+};
+
+function clean(value) {
+  return String(value || '').replace(/[\u0000-\u001f\u007f]/g, ' ').trim();
+}
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 254;
+}
+
+
+async function verifyTurnstileToken(token) {
+  const secret = process.env.TURNSTILE_SECRET_KEY;
+  if (!secret) {
+    const error = new Error('Turnstile secret is not configured');
+    error.statusCode = 501;
+    error.expose = false;
+    throw error;
+  }
+
+  if (!token || typeof token !== 'string') {
+    const error = new Error('Verification failed. Please try again.');
+    error.statusCode = 400;
+    error.expose = true;
+    throw error;
+  }
+
+  const form = new URLSearchParams();
+  form.append('secret', secret);
+  form.append('response', token);
+
+  const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+    method: 'POST',
+    headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    body: form
+  });
+
+  const result = await response.json().catch(() => ({}));
+  if (!response.ok || !result.success) {
+    console.error('Turnstile verification failed:', result);
+    const error = new Error('Verification failed. Please try again.');
+    error.statusCode = 400;
+    error.expose = true;
+    throw error;
+  }
 }

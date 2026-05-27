@@ -1,61 +1,98 @@
-# Abraham Caster Website — Pre-Deployment Notes
+# Abraham Caster Website Package
 
-This version uses:
+This package is ready for Netlify upload and includes the updated multi-page website.
 
-- Static HTML/CSS/JS deployed on Netlify
-- Netlify Functions for server-side logic
-- Flutterwave checkout for print payments
-- Flutterwave webhook verification before fulfilment
-- Supabase for edition tracking and order records
-- CreativeHub for print fulfilment
-- Brevo for newsletter signup, buyer segmentation, confirmation emails, and commission inquiry emails
+## What changed
 
-## Required Netlify environment variables
+- Long em dashes were removed from the website copy.
+- Originals and prints now show series as collection cards.
+- Series pages were added:
+  - `series/perception.html`
+  - `series/shades-of-brown.html`
+- Missing artwork image paths now point to local files in `assets/images/`.
+- Commission inquiry form now asks for full context, reference photos, and shipping destination.
+- Backend-ready Netlify functions were added for:
+  - Brevo newsletter signups
+  - Lemon Squeezy webhooks
+  - CreativeHub fulfilment
+  - Buyer segmentation
+  - Commission inquiry handling
+- Security headers were updated in `_headers`.
 
-Set these in Netlify before deploying:
+## How to edit text
 
-- `URL`
-- `FLW_SECRET_KEY`
-- `FLW_WEBHOOK_SECRET`
-- `SUPABASE_URL`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `CREATIVEHUB_API_KEY`
+Do not double-click the HTML file if you want to edit it. Double-clicking opens the preview in Chrome.
+
+Use this instead:
+
+1. Install Visual Studio Code.
+2. Unzip this package.
+3. Open VS Code.
+4. Click `File` > `Open Folder`.
+5. Choose the unzipped website folder.
+6. In the left sidebar, click the file you want to edit.
+7. Edit the text and press `Ctrl + S` to save.
+8. Open `index.html` in Chrome to preview changes.
+
+Most artwork text, image paths, series data, popup text, and payment links are inside `shared.js`.
+
+## Image editing
+
+Add your real images to:
+
+`assets/images/`
+
+Use these exact filenames:
+
+- `grey.jpg`
+- `serenity.jpg`
+- `the-broken.jpg`
+- `ayaba.jpg`
+- `shades-of-brown-1.jpg`
+- `shades-of-brown-2.jpg`
+- `view.jpg`
+- `sound.jpg`
+- `taste.jpg`
+- `scent.jpg`
+- `feel.jpg`
+- `fela.jpg`
+- `eminem.jpg`
+
+## Lemon Squeezy checkout links
+
+Open `shared.js` and find `PRINT_SIZES`.
+
+Replace:
+
+`YOUR_LEMON_SQUEEZY_A4_LINK`
+
+with your actual Lemon Squeezy checkout link for that size. Repeat for A3 and A2.
+
+## Backend environment variables
+
+Set these in Netlify under Site settings > Environment variables:
+
 - `BREVO_API_KEY`
 - `BREVO_GENERAL_LIST_ID`
-- `BREVO_PRINT_BUYERS_LIST_ID`
-- `BREVO_ORIGINALS_LIST_ID`
-- `BREVO_WAITLIST_BROKEN_LIST_ID`
-- `BREVO_WAITLIST_SHADES_LIST_ID`
-- `BREVO_WAITLIST_PERCEPTION_LIST_ID`
-- `SITE_EMAIL`
-- `SENDER_EMAIL`
-- `COMMISSION_TO_EMAIL`
+- `BREVO_BUYERS_LIST_ID`
+- `LEMON_WEBHOOK_SECRET`
+- `CREATIVEHUB_API_KEY`
+- `ZOHO_SMTP_USER`
+- `ZOHO_SMTP_PASSWORD`
+- `ZOHO_TO_EMAIL`
 
-## Print order flow
+Never paste private API keys into `shared.js` or any public frontend file.
 
-1. Customer selects artwork and print size.
-2. Site checks size availability before checkout.
-3. Netlify function creates a Flutterwave checkout link.
-4. Flutterwave redirects the customer to `payment-success.html` after payment.
-5. Flutterwave sends webhook to `/.netlify/functions/flutterwave-webhook`.
-6. Webhook verifies transaction status, amount, and currency.
-7. Webhook claims the next edition number through Supabase RPC.
-8. Webhook stores the order record.
-9. Webhook submits fulfilment details to CreativeHub.
-10. Webhook sends buyer confirmation email through Brevo.
+## Backend strategy
 
-## Supabase requirement
+Website newsletter signup goes to Brevo General Collector List.
 
-The database must include the `claim_edition_number` RPC function. This function must atomically check the current edition count and increment it so two buyers cannot receive the same edition number.
+Lemon Squeezy paid orders should trigger the Lemon webhook. The backend should then:
 
-## CreativeHub auth
+1. Verify the Lemon Squeezy webhook signature.
+2. Add the buyer to Brevo Buyers / Warm Collectors.
+3. Map the purchased print to the correct CreativeHub product.
+4. Create a CreativeHub fulfilment order.
+5. Record edition number, order ID, buyer email, and fulfilment status in your future database.
 
-CreativeHub requests use:
-
-```txt
-Authorization: ApiKey <yourkey>
-```
-
-## Security headers
-
-Security headers are managed in `_headers`. Do not duplicate them in `netlify.toml`.
+Recommended future database options: Airtable, Supabase, or a simple Google Sheet automation.
