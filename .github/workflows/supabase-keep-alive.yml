@@ -2,18 +2,25 @@ name: Supabase Keep Alive
 
 on:
   schedule:
-    - cron: "0 9 * * 1,4"
+    - cron: "0 9 * * *"
   workflow_dispatch:
 
 jobs:
   ping:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Ping Supabase
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+      - name: Ping edition_tracking
         run: |
           curl -X GET "$SUPABASE_URL/rest/v1/edition_tracking?select=id&limit=1" \
             -H "apikey: $SUPABASE_KEY" \
             -H "Authorization: Bearer $SUPABASE_KEY"
+
+      - name: Ping orders
+        run: |
+          curl -X GET "$SUPABASE_URL/rest/v1/orders?select=id&limit=1" \
+            -H "apikey: $SUPABASE_KEY" \
+            -H "Authorization: Bearer $SUPABASE_KEY"
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
